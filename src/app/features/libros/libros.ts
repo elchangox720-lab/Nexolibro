@@ -11,6 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { retry, throwError, timer } from 'rxjs';
 import { EstadoLectura } from '../../core/models/biblioteca';
 import { Libro } from '../../core/models/libro';
 import { Resena } from '../../core/models/resena';
@@ -160,16 +161,34 @@ export class Libros implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
 
-    this.libroService.listar().subscribe({
-      next: (libros) => {
-        this.libros.set(libros);
-        this.cargando.set(false);
-      },
-      error: () => {
-        this.error.set('No se pudieron cargar los libros. Revisa que el backend esté en línea.');
-        this.cargando.set(false);
-      },
-    });
+    this.libroService
+      .listar()
+      .pipe(
+        retry({
+          count: 3,
+          delay: (error, intento) => {
+            const status = Number(error?.status ?? 0);
+
+            if (status >= 400 && status < 500 && status !== 429) {
+              return throwError(() => error);
+            }
+
+            return timer(intento * 1500);
+          },
+        }),
+      )
+      .subscribe({
+        next: (libros) => {
+          this.libros.set(libros);
+          this.cargando.set(false);
+        },
+        error: () => {
+          this.error.set(
+            'No se pudieron cargar los libros. El servidor puede estar iniciando; pulsa Reintentar.',
+          );
+          this.cargando.set(false);
+        },
+      });
   }
 
   protected limpiarFiltros(): void {
