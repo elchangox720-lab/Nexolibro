@@ -80,7 +80,7 @@
       box-shadow 0.2s ease;
 
     &::placeholder {
-      color: #6f6f83;
+      color: var(--input-placeholder);
     }
 
     &:focus {
@@ -230,8 +230,8 @@ select {
 .tag {
   padding: 0.18rem 0.6rem;
   border-radius: 999px;
-  background: rgba(139, 92, 246, 0.16);
-  color: #c4b5fd;
+  background: var(--tag-bg);
+  color: var(--tag-text);
   font-size: 0.72rem;
   font-weight: 500;
 }
@@ -270,7 +270,7 @@ select {
   padding: 4rem 1.25rem;
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius);
-  background: rgba(22, 22, 31, 0.4);
+  background: rgba(127, 127, 160, 0.06);
   color: var(--text-muted);
   text-align: center;
 
@@ -314,7 +314,7 @@ select {
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(4, 4, 8, 0.78);
+  background: var(--overlay);
   backdrop-filter: blur(8px);
   animation: fade-in 0.2s ease;
 }
@@ -382,7 +382,7 @@ select {
 
 .modal-desc {
   margin: 0.4rem 0 0;
-  color: #c9c9d6;
+  color: var(--desc-text);
   line-height: 1.65;
 }
 
@@ -445,7 +445,7 @@ select {
   height: 2rem;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--close-bg);
   color: var(--text);
   font-size: 1.15rem;
   line-height: 1;

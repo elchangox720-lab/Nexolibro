@@ -1,9 +1,23 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'libros',
     loadComponent: () => import('./features/libros/libros').then((m) => m.Libros),
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
+  },
+  {
+    path: 'registro',
+    loadComponent: () => import('./features/auth/registro/registro').then((m) => m.Registro),
+  },
+  {
+    path: 'historial',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/historial/historial').then((m) => m.Historial),
   },
   { path: '', pathMatch: 'full', redirectTo: 'libros' },
   { path: '**', redirectTo: 'libros' },

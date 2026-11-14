@@ -13,9 +13,12 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.85rem clamp(1rem, 4vw, 3rem);
-  background: rgba(8, 8, 12, 0.72);
+  background: var(--header-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(14px);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .app-brand {
@@ -44,9 +47,17 @@
   box-shadow: 0 6px 18px -6px rgba(212, 175, 55, 0.8);
 }
 
-.app-nav a {
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.app-nav a:not(.app-btn-solid) {
   display: inline-block;
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 999px;
   color: var(--text-muted);
   font-size: 0.95rem;
@@ -59,6 +70,62 @@
   &.active {
     color: var(--text);
     background: var(--surface-2);
+  }
+}
+
+.app-user {
+  padding: 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.app-btn,
+.app-btn-solid {
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    border-color: var(--gold);
+  }
+}
+
+.app-btn-solid {
+  border: 0;
+  background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+  color: #1a1200;
+  font-weight: 600;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    border-color: var(--gold);
+    color: var(--gold-soft);
   }
 }
 

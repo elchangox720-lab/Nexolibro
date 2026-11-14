@@ -1,0 +1,67 @@
+<section class="auth-wrap">
+  <div class="auth-card">
+    <p class="auth-eyebrow">Únete</p>
+    <h1 class="auth-title">Crear cuenta</h1>
+    <p class="auth-subtitle">Regístrate para guardar tu historial de navegación.</p>
+
+    <form (ngSubmit)="enviar()">
+      <div class="auth-field">
+        <label for="nombre">Nombre</label>
+        <input
+          id="nombre"
+          name="nombre"
+          type="text"
+          autocomplete="name"
+          [(ngModel)]="nombre"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          [(ngModel)]="email"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="password"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="confirmar">Confirmar contraseña</label>
+        <input
+          id="confirmar"
+          name="confirmar"
+          type="password"
+          autocomplete="new-password"
+          [(ngModel)]="confirmar"
+          required
+        />
+      </div>
+
+      @if (error()) {
+        <p class="auth-error">{{ error() }}</p>
+      }
+
+      <button class="auth-submit" type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="auth-alt">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </div>
+</section>

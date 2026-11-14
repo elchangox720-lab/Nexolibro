@@ -1,0 +1,51 @@
+<section>
+  <header class="historial-header">
+    <div>
+      <h1>Historial de navegación</h1>
+      <p>
+        Libros que has abierto recientemente
+        @if (auth.usuario(); as usuario) {
+          , {{ usuario.nombre }}
+        }.
+      </p>
+    </div>
+
+    @if (items().length) {
+      <button class="historial-limpiar" type="button" (click)="limpiar()">Borrar historial</button>
+    }
+  </header>
+
+  @if (cargando()) {
+    <p class="state">Cargando historial...</p>
+  } @else if (error()) {
+    <p class="state error">{{ error() }}</p>
+  } @else if (!items().length) {
+    <p class="state">Todavía no has abierto ningún libro.</p>
+  } @else {
+    <ul class="historial-lista">
+      @for (item of items(); track item._id) {
+        <li class="historial-item">
+          <div class="historial-portada">
+            @if (item.portada) {
+              <img [src]="item.portada" [alt]="'Portada de ' + item.titulo" loading="lazy" />
+            }
+          </div>
+
+          <div class="historial-info">
+            <strong>{{ item.titulo }}</strong>
+            <span>{{ item.autor }} · {{ item.vistoEn | date: 'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+
+          <button
+            class="historial-quitar"
+            type="button"
+            (click)="quitar(item._id)"
+            aria-label="Quitar del historial"
+          >
+            Quitar
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>

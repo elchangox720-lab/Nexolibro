@@ -1,6 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
 import { Libro } from '../../core/models/libro';
+import { AuthService } from '../../core/services/auth.service';
+import { HistorialService } from '../../core/services/historial.service';
 import { LibroService } from '../../core/services/libro.service';
 
 @Component({
@@ -11,6 +13,8 @@ import { LibroService } from '../../core/services/libro.service';
 })
 export class Libros implements OnInit {
   private readonly libroService = inject(LibroService);
+  private readonly auth = inject(AuthService);
+  private readonly historialService = inject(HistorialService);
 
   private readonly paletas = [
     'linear-gradient(135deg, #7c3aed, #2563eb)',
@@ -77,6 +81,12 @@ export class Libros implements OnInit {
 
   protected seleccionar(libro: Libro): void {
     this.seleccionado.set(libro);
+
+    if (this.auth.autenticado()) {
+      this.historialService.registrar(libro).subscribe({
+        error: () => undefined,
+      });
+    }
   }
 
   protected cerrar(): void {
