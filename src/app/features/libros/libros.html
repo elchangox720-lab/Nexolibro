@@ -76,7 +76,16 @@
       @for (libro of filtrados(); track libro._id) {
         <li class="card">
           <div class="card-cover" [style.background]="portada(libro)">
-            <span class="card-initial">{{ libro.titulo.charAt(0) }}</span>
+            @if (libro.portada) {
+              <img
+                class="card-cover-img"
+                [src]="libro.portada"
+                [alt]="'Portada de ' + libro.titulo"
+                loading="lazy"
+              />
+            } @else {
+              <span class="card-initial">{{ libro.titulo.charAt(0) }}</span>
+            }
           </div>
 
           <div class="card-body">
