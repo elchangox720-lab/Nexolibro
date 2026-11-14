@@ -1,0 +1,32 @@
+<section class="libros">
+  <header class="libros-header">
+    <h1>Libros</h1>
+    <button type="button" (click)="cargar()">Recargar</button>
+  </header>
+
+  @if (cargando()) {
+    <p class="estado">Cargando libros...</p>
+  } @else if (error()) {
+    <p class="estado error">{{ error() }}</p>
+  } @else if (libros().length === 0) {
+    <p class="estado">Todavía no hay libros registrados.</p>
+  } @else {
+    <ul class="libros-lista">
+      @for (libro of libros(); track libro._id) {
+        <li class="libro">
+          <div class="libro-info">
+            <strong>{{ libro.titulo }}</strong>
+            <span class="autor">{{ libro.autor }}</span>
+            @if (libro.genero) {
+              <span class="genero">{{ libro.genero }}</span>
+            }
+          </div>
+          <div class="libro-meta">
+            <span>{{ libro.precio | currency: 'MXN' }}</span>
+            <span>{{ libro.stock }} en stock</span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>
