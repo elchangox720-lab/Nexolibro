@@ -74,7 +74,15 @@
   } @else {
     <ul class="grid">
       @for (libro of filtrados(); track libro._id) {
-        <li class="card">
+        <li
+          class="card"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Ver detalles de ' + libro.titulo"
+          (click)="seleccionar(libro)"
+          (keydown.enter)="seleccionar(libro)"
+          (keydown.space)="seleccionar(libro); $event.preventDefault()"
+        >
           <div class="card-cover" [style.background]="portada(libro)">
             @if (libro.portada) {
               <img
@@ -102,7 +110,7 @@
             </div>
 
             <div class="card-footer">
-              <span class="price">{{ libro.precio | currency: 'MXN' }}</span>
+              <span class="price">{{ libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
               @if (libro.anio) {
                 <span class="year">{{ libro.anio }}</span>
               }
@@ -111,5 +119,65 @@
         </li>
       }
     </ul>
+  }
+
+  @if (seleccionado(); as libro) {
+    <div
+      class="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="libro.titulo"
+      (click)="cerrar()"
+    >
+      <article class="modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" type="button" aria-label="Cerrar" (click)="cerrar()">
+          ×
+        </button>
+
+        <div class="modal-cover" [style.background]="portada(libro)">
+          @if (libro.portada) {
+            <img [src]="libro.portada" [alt]="'Portada de ' + libro.titulo" />
+          } @else {
+            <span class="card-initial">{{ libro.titulo.charAt(0) }}</span>
+          }
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-eyebrow">{{ libro.genero || 'Libro' }}</p>
+          <h2>{{ libro.titulo }}</h2>
+          <p class="modal-author">{{ libro.autor }}</p>
+
+          <p class="modal-desc">
+            {{ libro.descripcion || 'Sin descripción disponible para este libro.' }}
+          </p>
+
+          <dl class="modal-meta">
+            @if (libro.anio) {
+              <div>
+                <dt>Año</dt>
+                <dd>{{ libro.anio }}</dd>
+              </div>
+            }
+            @if (libro.editorial) {
+              <div>
+                <dt>Editorial</dt>
+                <dd>{{ libro.editorial }}</dd>
+              </div>
+            }
+            <div>
+              <dt>Disponibilidad</dt>
+              <dd>{{ libro.stock === 0 ? 'Agotado' : libro.stock + ' disponibles' }}</dd>
+            </div>
+          </dl>
+
+          <div class="modal-footer">
+            <span class="modal-price">{{
+              libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+            }}</span>
+            <button class="modal-btn" type="button" (click)="cerrar()">Cerrar</button>
+          </div>
+        </div>
+      </article>
+    </div>
   }
 </section>

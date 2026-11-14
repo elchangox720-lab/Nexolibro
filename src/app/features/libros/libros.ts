@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
 import { Libro } from '../../core/models/libro';
 import { LibroService } from '../../core/services/libro.service';
 
@@ -28,6 +28,7 @@ export class Libros implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly busqueda = signal('');
   protected readonly genero = signal('');
+  protected readonly seleccionado = signal<Libro | null>(null);
 
   protected readonly generos = computed(() =>
     [...new Set(this.libros().map((libro) => libro.genero).filter((g): g is string => !!g))].sort(),
@@ -72,6 +73,19 @@ export class Libros implements OnInit {
   protected limpiarFiltros(): void {
     this.busqueda.set('');
     this.genero.set('');
+  }
+
+  protected seleccionar(libro: Libro): void {
+    this.seleccionado.set(libro);
+  }
+
+  protected cerrar(): void {
+    this.seleccionado.set(null);
+  }
+
+  @HostListener('document:keydown.escape')
+  protected alPresionarEscape(): void {
+    this.cerrar();
   }
 
   protected portada(libro: Libro): string {
