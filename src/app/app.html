@@ -5,7 +5,7 @@
   </a>
 
   <nav class="app-nav">
-    <a routerLink="/libros" routerLinkActive="active">Catálogo</a>
+    <a routerLink="/libros" routerLinkActive="active" (click)="abrirCatalogo()">Catálogo</a>
 
     @if (auth.autenticado()) {
       <a routerLink="/historial" routerLinkActive="active">Historial</a>

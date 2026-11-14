@@ -1,7 +1,9 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Libro } from '../../core/models/libro';
 import { AuthService } from '../../core/services/auth.service';
+import { CatalogoService } from '../../core/services/catalogo.service';
 import { HistorialService } from '../../core/services/historial.service';
 import { LibroService } from '../../core/services/libro.service';
 
@@ -15,6 +17,8 @@ export class Libros implements OnInit {
   private readonly libroService = inject(LibroService);
   private readonly auth = inject(AuthService);
   private readonly historialService = inject(HistorialService);
+  private readonly catalogo = inject(CatalogoService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly paletas = [
     'linear-gradient(135deg, #7c3aed, #2563eb)',
@@ -78,6 +82,14 @@ export class Libros implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+
+    this.catalogo.reinicios$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.limpiarFiltros();
+        this.cerrar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
   }
 
   protected cargar(): void {
