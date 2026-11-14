@@ -1,24 +1,42 @@
-import { CurrencyPipe } from '@angular/common';
-import { Component, computed, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  HostListener,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { EstadoLectura } from '../../core/models/biblioteca';
 import { Libro } from '../../core/models/libro';
+import { Resena } from '../../core/models/resena';
 import { AuthService } from '../../core/services/auth.service';
+import { BibliotecaService } from '../../core/services/biblioteca.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { HistorialService } from '../../core/services/historial.service';
 import { LibroService } from '../../core/services/libro.service';
+import { ResenaService } from '../../core/services/resena.service';
 
 @Component({
   selector: 'app-libros',
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, FormsModule, RouterLink],
   templateUrl: './libros.html',
   styleUrl: './libros.scss',
 })
 export class Libros implements OnInit {
   private readonly libroService = inject(LibroService);
-  private readonly auth = inject(AuthService);
   private readonly historialService = inject(HistorialService);
+  private readonly bibliotecaService = inject(BibliotecaService);
+  private readonly resenaService = inject(ResenaService);
   private readonly catalogo = inject(CatalogoService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+
+  protected readonly auth = inject(AuthService);
 
   private readonly paletas = [
     'linear-gradient(135deg, #7c3aed, #2563eb)',
@@ -39,13 +57,36 @@ export class Libros implements OnInit {
   protected readonly tipo = signal('');
   protected readonly seleccionado = signal<Libro | null>(null);
 
+  protected readonly favoritos = signal<Set<string>>(new Set());
+  protected readonly estados = signal<Map<string, EstadoLectura>>(new Map());
+  protected readonly soloFavoritos = signal(false);
+  protected readonly estadoFiltro = signal<'' | EstadoLectura>('');
+
+  protected readonly resenas = signal<Resena[]>([]);
+  protected readonly promedio = signal(0);
+  protected readonly total = signal(0);
+  protected readonly calificacion = signal(0);
+  protected comentario = '';
+  protected readonly enviandoResena = signal(false);
+  protected readonly resenaError = signal<string | null>(null);
+
   protected readonly generos = computed(() =>
-    [...new Set(this.libros().map((libro) => libro.genero).filter((g): g is string => !!g))].sort(),
+    [
+      ...new Set(
+        this.libros()
+          .map((libro) => libro.genero)
+          .filter((g): g is string => !!g),
+      ),
+    ].sort(),
   );
 
   protected readonly tipos = computed(() => {
     const orden = ['Novela', 'Manga', 'Manhwa', 'Cómic'];
-    const presentes = new Set(this.libros().map((libro) => libro.tipo).filter((t): t is string => !!t));
+    const presentes = new Set(
+      this.libros()
+        .map((libro) => libro.tipo)
+        .filter((t): t is string => !!t),
+    );
 
     return orden.filter((item) => presentes.has(item));
   });
@@ -62,34 +103,57 @@ export class Libros implements OnInit {
     return mapa;
   });
 
+  protected readonly miResena = computed(() => {
+    const usuarioId = this.auth.usuario()?._id;
+    return usuarioId
+      ? (this.resenas().find((resena) => resena.usuario?._id === usuarioId) ?? null)
+      : null;
+  });
+
+  protected readonly promedioEntero = computed(() => Math.round(this.promedio()));
+
+  protected readonly hayFiltros = computed(
+    () =>
+      !!this.busqueda() ||
+      !!this.genero() ||
+      !!this.tipo() ||
+      this.soloFavoritos() ||
+      !!this.estadoFiltro(),
+  );
+
   protected readonly filtrados = computed(() => {
     const query = this.busqueda().trim().toLowerCase();
     const genero = this.genero();
     const tipo = this.tipo();
+    const soloFavoritos = this.soloFavoritos();
+    const estadoFiltro = this.estadoFiltro();
+    const favoritos = this.favoritos();
+    const estados = this.estados();
 
     return this.libros().filter((libro) => {
       const coincideGenero = !genero || libro.genero === genero;
       const coincideTipo = !tipo || libro.tipo === tipo;
+      const coincideFavorito = !soloFavoritos || favoritos.has(libro._id);
+      const coincideEstado = !estadoFiltro || estados.get(libro._id) === estadoFiltro;
       const coincideTexto =
         !query ||
         [libro.titulo, libro.autor, libro.editorial, libro.genero, libro.tipo, libro.isbn].some(
           (valor) => valor?.toLowerCase().includes(query),
         );
 
-      return coincideGenero && coincideTipo && coincideTexto;
+      return coincideGenero && coincideTipo && coincideFavorito && coincideEstado && coincideTexto;
     });
   });
 
   ngOnInit(): void {
     this.cargar();
+    this.cargarBiblioteca();
 
-    this.catalogo.reinicios$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.limpiarFiltros();
-        this.cerrar();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
+    this.catalogo.reinicios$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.limpiarFiltros();
+      this.cerrar();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   protected cargar(): void {
@@ -112,10 +176,90 @@ export class Libros implements OnInit {
     this.busqueda.set('');
     this.genero.set('');
     this.tipo.set('');
+    this.soloFavoritos.set(false);
+    this.estadoFiltro.set('');
+  }
+
+  protected esFavorito(libro: Libro): boolean {
+    return this.favoritos().has(libro._id);
+  }
+
+  protected estadoDe(libro: Libro): EstadoLectura | null {
+    return this.estados().get(libro._id) ?? null;
+  }
+
+  protected etiquetaEstado(estado: EstadoLectura | null): string {
+    switch (estado) {
+      case 'quiero-leer':
+        return 'Quiero leer';
+      case 'leyendo':
+        return 'Leyendo';
+      case 'leido':
+        return 'Leído';
+      default:
+        return '';
+    }
+  }
+
+  protected alternarFavorito(libro: Libro, evento?: Event): void {
+    evento?.stopPropagation();
+
+    if (!this.auth.autenticado()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const activo = this.favoritos().has(libro._id);
+    const siguiente = new Set(this.favoritos());
+
+    if (activo) {
+      siguiente.delete(libro._id);
+    } else {
+      siguiente.add(libro._id);
+    }
+
+    this.favoritos.set(siguiente);
+
+    this.bibliotecaService.actualizar(libro._id, { favorito: !activo }).subscribe({
+      error: () => {
+        const revertido = new Set(this.favoritos());
+        if (activo) {
+          revertido.add(libro._id);
+        } else {
+          revertido.delete(libro._id);
+        }
+        this.favoritos.set(revertido);
+      },
+    });
+  }
+
+  protected cambiarEstado(libro: Libro, valor: string, evento?: Event): void {
+    evento?.stopPropagation();
+
+    if (!this.auth.autenticado()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    const estado = (valor || null) as EstadoLectura | null;
+    const siguiente = new Map(this.estados());
+
+    if (estado) {
+      siguiente.set(libro._id, estado);
+    } else {
+      siguiente.delete(libro._id);
+    }
+
+    this.estados.set(siguiente);
+
+    this.bibliotecaService.actualizar(libro._id, { estado }).subscribe({
+      error: () => this.cargarBiblioteca(),
+    });
   }
 
   protected seleccionar(libro: Libro): void {
     this.seleccionado.set(libro);
+    this.cargarResenas(libro._id);
 
     if (this.auth.autenticado()) {
       this.historialService.registrar(libro).subscribe({
@@ -126,6 +270,54 @@ export class Libros implements OnInit {
 
   protected cerrar(): void {
     this.seleccionado.set(null);
+  }
+
+  protected enviarResena(libro: Libro): void {
+    if (this.calificacion() < 1) {
+      this.resenaError.set('Elige una calificación de 1 a 5 estrellas.');
+      return;
+    }
+
+    this.enviandoResena.set(true);
+    this.resenaError.set(null);
+
+    this.resenaService
+      .guardar(libro._id, {
+        calificacion: this.calificacion(),
+        comentario: this.comentario.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.enviandoResena.set(false);
+          this.cargarResenas(libro._id);
+        },
+        error: (err) => {
+          this.enviandoResena.set(false);
+          this.resenaError.set(err?.error?.message ?? 'No se pudo guardar tu reseña.');
+        },
+      });
+  }
+
+  protected eliminarMiResena(libro: Libro): void {
+    if (!confirm('¿Eliminar tu reseña de este libro?')) {
+      return;
+    }
+
+    this.resenaService.eliminar(libro._id).subscribe({
+      next: () => {
+        this.calificacion.set(0);
+        this.comentario = '';
+        this.cargarResenas(libro._id);
+      },
+      error: (err) => {
+        this.resenaError.set(err?.error?.message ?? 'No se pudo eliminar tu reseña.');
+      },
+    });
+  }
+
+  protected estrellas(valor: number): string {
+    const llenas = Math.max(0, Math.min(5, Math.round(valor)));
+    return '★'.repeat(llenas) + '☆'.repeat(5 - llenas);
   }
 
   @HostListener('document:keydown.escape')
@@ -142,5 +334,65 @@ export class Libros implements OnInit {
     }
 
     return this.paletas[hash % this.paletas.length];
+  }
+
+  private cargarBiblioteca(): void {
+    if (!this.auth.autenticado()) {
+      return;
+    }
+
+    this.bibliotecaService.listar().subscribe({
+      next: (items) => {
+        const favoritos = new Set<string>();
+        const estados = new Map<string, EstadoLectura>();
+
+        for (const item of items) {
+          if (item.favorito) {
+            favoritos.add(item.libro);
+          }
+          if (item.estado) {
+            estados.set(item.libro, item.estado);
+          }
+        }
+
+        this.favoritos.set(favoritos);
+        this.estados.set(estados);
+      },
+      error: () => undefined,
+    });
+  }
+
+  private cargarResenas(libroId: string): void {
+    this.resenas.set([]);
+    this.promedio.set(0);
+    this.total.set(0);
+    this.calificacion.set(0);
+    this.comentario = '';
+    this.resenaError.set(null);
+
+    this.resenaService.listar(libroId).subscribe({
+      next: (data) => {
+        if (this.seleccionado()?._id !== libroId) {
+          return;
+        }
+
+        this.resenas.set(data.resenas);
+        this.promedio.set(data.promedio);
+        this.total.set(data.total);
+
+        const usuarioId = this.auth.usuario()?._id;
+        const propia = data.resenas.find((resena) => resena.usuario?._id === usuarioId);
+
+        if (propia) {
+          this.calificacion.set(propia.calificacion);
+          this.comentario = propia.comentario ?? '';
+        }
+      },
+      error: () => {
+        if (this.seleccionado()?._id === libroId) {
+          this.resenaError.set('No se pudieron cargar las reseñas.');
+        }
+      },
+    });
   }
 }

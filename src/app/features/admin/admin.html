@@ -1,0 +1,149 @@
+<section class="admin">
+  <header class="admin-head">
+    <div>
+      <p class="admin-eyebrow">Administración</p>
+      <h1>Gestionar libros</h1>
+      <p class="admin-subtitle">Crea, edita o elimina títulos del catálogo.</p>
+    </div>
+    <button class="admin-nuevo" type="button" (click)="nuevo()">+ Nuevo libro</button>
+  </header>
+
+  <div class="admin-toolbar">
+    <input
+      type="search"
+      placeholder="Buscar por título, autor, género o ISBN"
+      aria-label="Buscar libros en administración"
+      [value]="busqueda()"
+      (input)="busqueda.set($any($event.target).value)"
+    />
+    <span>{{ filtrados().length }} de {{ libros().length }} libros</span>
+  </div>
+
+  @if (aviso()) {
+    <p class="admin-aviso">{{ aviso() }}</p>
+  }
+
+  @if (cargando()) {
+    <div class="admin-estado">Cargando libros...</div>
+  } @else if (error()) {
+    <div class="admin-estado admin-estado--error">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (filtrados().length === 0) {
+    <div class="admin-estado">No hay libros que coincidan con la búsqueda.</div>
+  } @else {
+    <div class="admin-tabla">
+      <div class="admin-fila admin-fila--head">
+        <span>Libro</span>
+        <span>Tipo</span>
+        <span>Género</span>
+        <span>Precio</span>
+        <span>Stock</span>
+        <span>Acciones</span>
+      </div>
+
+      @for (libro of filtrados(); track libro._id) {
+        <article class="admin-fila">
+          <div class="admin-libro">
+            @if (libro.portada) {
+              <img [src]="libro.portada" [alt]="'Portada de ' + libro.titulo" loading="lazy" />
+            } @else {
+              <span class="admin-inicial">{{ libro.titulo.charAt(0) }}</span>
+            }
+            <div>
+              <strong>{{ libro.titulo }}</strong>
+              <small>{{ libro.autor }}</small>
+            </div>
+          </div>
+          <span>{{ libro.tipo || '—' }}</span>
+          <span>{{ libro.genero || '—' }}</span>
+          <span>{{ libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+          <span>{{ libro.stock }}</span>
+          <div class="admin-acciones">
+            <button type="button" (click)="editar(libro)">Editar</button>
+            <button type="button" class="peligro" (click)="eliminar(libro)">Eliminar</button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (formularioAbierto()) {
+    <div class="admin-backdrop" (click)="cerrarFormulario()">
+      <form class="admin-form" (ngSubmit)="guardar()" (click)="$event.stopPropagation()">
+        <header class="admin-form-head">
+          <h2>{{ editando() ? 'Editar libro' : 'Nuevo libro' }}</h2>
+          <button type="button" aria-label="Cerrar" (click)="cerrarFormulario()">×</button>
+        </header>
+
+        <div class="admin-campos">
+          <label>
+            <span>Título *</span>
+            <input name="titulo" [(ngModel)]="formulario.titulo" required maxlength="200" />
+          </label>
+          <label>
+            <span>Autor *</span>
+            <input name="autor" [(ngModel)]="formulario.autor" required maxlength="160" />
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select name="tipo" [(ngModel)]="formulario.tipo">
+              @for (tipo of tipos; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Género</span>
+            <input name="genero" [(ngModel)]="formulario.genero" maxlength="80" />
+          </label>
+          <label>
+            <span>Año</span>
+            <input name="anio" type="number" [(ngModel)]="formulario.anio" min="0" />
+          </label>
+          <label>
+            <span>Editorial</span>
+            <input name="editorial" [(ngModel)]="formulario.editorial" maxlength="120" />
+          </label>
+          <label>
+            <span>ISBN</span>
+            <input name="isbn" [(ngModel)]="formulario.isbn" maxlength="40" />
+          </label>
+          <label>
+            <span>Precio (COP)</span>
+            <input name="precio" type="number" [(ngModel)]="formulario.precio" min="0" />
+          </label>
+          <label>
+            <span>Stock</span>
+            <input name="stock" type="number" [(ngModel)]="formulario.stock" min="0" />
+          </label>
+          <label class="admin-campo-ancho">
+            <span>URL de portada</span>
+            <input name="portada" type="url" [(ngModel)]="formulario.portada" />
+          </label>
+          <label class="admin-campo-ancho">
+            <span>Descripción</span>
+            <textarea
+              name="descripcion"
+              rows="4"
+              [(ngModel)]="formulario.descripcion"
+              maxlength="2000"
+            ></textarea>
+          </label>
+        </div>
+
+        @if (formError()) {
+          <p class="admin-error">{{ formError() }}</p>
+        }
+
+        <footer class="admin-form-footer">
+          <button type="button" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="submit" class="principal" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar libro' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  }
+</section>

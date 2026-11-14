@@ -25,8 +25,8 @@ export class Registro {
       return;
     }
 
-    if (this.password.length < 6) {
-      this.error.set('La contraseña debe tener al menos 6 caracteres.');
+    if (this.password.length < 8) {
+      this.error.set('La contraseña debe tener al menos 8 caracteres.');
       return;
     }
 

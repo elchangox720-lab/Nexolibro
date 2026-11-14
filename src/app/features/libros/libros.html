@@ -2,33 +2,27 @@
   <header class="hero">
     <p class="hero-eyebrow">Catálogo</p>
     <h1>Encuentra tu próxima lectura</h1>
-    <p class="hero-subtitle">
-      Explora nuestra colección de libros y descubre tu próximo favorito.
-    </p>
+    <p class="hero-subtitle">Explora nuestra colección de libros y descubre tu próximo favorito.</p>
     <div class="hero-stats">
-      <span><strong>{{ libros().length }}</strong> títulos</span>
-      <span><strong>{{ generos().length }}</strong> géneros</span>
-      <span><strong>{{ tipos().length }}</strong> formatos</span>
+      <span
+        ><strong>{{ libros().length }}</strong> títulos</span
+      >
+      <span
+        ><strong>{{ generos().length }}</strong> géneros</span
+      >
+      <span
+        ><strong>{{ tipos().length }}</strong> formatos</span
+      >
     </div>
   </header>
 
   <nav class="colecciones" aria-label="Catálogos por formato">
-    <button
-      type="button"
-      class="chip"
-      [class.active]="tipo() === ''"
-      (click)="tipo.set('')"
-    >
+    <button type="button" class="chip" [class.active]="tipo() === ''" (click)="tipo.set('')">
       Todas las obras
       <span>{{ libros().length }}</span>
     </button>
     @for (item of tipos(); track item) {
-      <button
-        type="button"
-        class="chip"
-        [class.active]="tipo() === item"
-        (click)="tipo.set(item)"
-      >
+      <button type="button" class="chip" [class.active]="tipo() === item" (click)="tipo.set(item)">
         {{ item }}s
         <span>{{ conteos().get(item) }}</span>
       </button>
@@ -72,7 +66,30 @@
       }
     </select>
 
-    @if (busqueda() || genero() || tipo()) {
+    @if (auth.autenticado()) {
+      <button
+        class="btn-ghost filtro-favoritos"
+        type="button"
+        [class.active]="soloFavoritos()"
+        [attr.aria-pressed]="soloFavoritos()"
+        (click)="soloFavoritos.set(!soloFavoritos())"
+      >
+        Favoritos
+      </button>
+
+      <select
+        aria-label="Filtrar por estado de lectura"
+        [value]="estadoFiltro()"
+        (change)="estadoFiltro.set($any($event.target).value)"
+      >
+        <option value="">Todos los estados</option>
+        <option value="quiero-leer">Quiero leer</option>
+        <option value="leyendo">Leyendo</option>
+        <option value="leido">Leído</option>
+      </select>
+    }
+
+    @if (hayFiltros()) {
       <button class="btn-ghost" type="button" (click)="limpiarFiltros()">Limpiar</button>
     }
   </div>
@@ -91,7 +108,7 @@
   } @else if (filtrados().length === 0) {
     <div class="state">
       <p>No encontramos libros con esos criterios.</p>
-      @if (busqueda() || genero() || tipo()) {
+      @if (hayFiltros()) {
         <button type="button" (click)="limpiarFiltros()">Ver todos</button>
       }
     </div>
@@ -118,6 +135,34 @@
             } @else {
               <span class="card-initial">{{ libro.titulo.charAt(0) }}</span>
             }
+
+            <button
+              class="card-fav"
+              type="button"
+              [class.active]="esFavorito(libro)"
+              [attr.aria-label]="
+                esFavorito(libro)
+                  ? 'Quitar ' + libro.titulo + ' de favoritos'
+                  : 'Añadir ' + libro.titulo + ' a favoritos'
+              "
+              [attr.aria-pressed]="esFavorito(libro)"
+              (click)="alternarFavorito(libro, $event)"
+              (keydown.enter)="$event.stopPropagation()"
+              (keydown.space)="$event.stopPropagation()"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 20.5s-7.05-4.3-9.15-8.02C1.03 9.6 2.2 6.3 5.2 5.4c1.9-.56 3.9.26 5.05 1.85l.75 1 .75-1c1.15-1.59 3.15-2.41 5.05-1.85 3 .9 4.17 4.2 2.35 7.08C19.05 16.2 12 20.5 12 20.5Z"
+                />
+              </svg>
+            </button>
           </div>
 
           <div class="card-body">
@@ -131,13 +176,18 @@
               @if (libro.genero) {
                 <span class="tag">{{ libro.genero }}</span>
               }
+              @if (estadoDe(libro); as estado) {
+                <span class="tag tag-estado">{{ etiquetaEstado(estado) }}</span>
+              }
               <span class="stock" [class.agotado]="libro.stock === 0">
                 {{ libro.stock === 0 ? 'Agotado' : libro.stock + ' en stock' }}
               </span>
             </div>
 
             <div class="card-footer">
-              <span class="price">{{ libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span>
+              <span class="price">{{
+                libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+              }}</span>
               @if (libro.anio) {
                 <span class="year">{{ libro.anio }}</span>
               }
@@ -157,9 +207,7 @@
       (click)="cerrar()"
     >
       <article class="modal" (click)="$event.stopPropagation()">
-        <button class="modal-close" type="button" aria-label="Cerrar" (click)="cerrar()">
-          ×
-        </button>
+        <button class="modal-close" type="button" aria-label="Cerrar" (click)="cerrar()">×</button>
 
         <div class="modal-cover" [style.background]="portada(libro)">
           @if (libro.portada) {
@@ -171,12 +219,20 @@
 
         <div class="modal-body">
           <p class="modal-eyebrow">
-            {{ libro.tipo || 'Libro' }}@if (libro.genero) {
+            {{ libro.tipo || 'Libro' }}
+            @if (libro.genero) {
               <span> · {{ libro.genero }}</span>
             }
           </p>
           <h2>{{ libro.titulo }}</h2>
           <p class="modal-author">{{ libro.autor }}</p>
+
+          @if (total() > 0) {
+            <p class="modal-rating">
+              <span class="modal-estrellas">{{ estrellas(promedioEntero()) }}</span>
+              <span>{{ promedio() | number: '1.1-1' }} · {{ total() }} reseñas</span>
+            </p>
+          }
 
           <p class="modal-desc">
             {{ libro.descripcion || 'Sin descripción disponible para este libro.' }}
@@ -200,6 +256,123 @@
               <dd>{{ libro.stock === 0 ? 'Agotado' : libro.stock + ' disponibles' }}</dd>
             </div>
           </dl>
+
+          <div class="modal-acciones">
+            <button
+              class="modal-btn modal-fav"
+              type="button"
+              [class.active]="esFavorito(libro)"
+              [attr.aria-pressed]="esFavorito(libro)"
+              (click)="alternarFavorito(libro, $event)"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 20.5s-7.05-4.3-9.15-8.02C1.03 9.6 2.2 6.3 5.2 5.4c1.9-.56 3.9.26 5.05 1.85l.75 1 .75-1c1.15-1.59 3.15-2.41 5.05-1.85 3 .9 4.17 4.2 2.35 7.08C19.05 16.2 12 20.5 12 20.5Z"
+                />
+              </svg>
+              {{ esFavorito(libro) ? 'En favoritos' : 'Añadir a favoritos' }}
+            </button>
+
+            <label class="estado-select">
+              <span>Estado de lectura</span>
+              <select
+                [value]="estadoDe(libro) ?? ''"
+                (change)="cambiarEstado(libro, $any($event.target).value, $event)"
+              >
+                <option value="">Sin estado</option>
+                <option value="quiero-leer">Quiero leer</option>
+                <option value="leyendo">Leyendo</option>
+                <option value="leido">Leído</option>
+              </select>
+            </label>
+          </div>
+
+          <section class="resenas">
+            <header class="resenas-head">
+              <h3>Reseñas y calificaciones</h3>
+              <span>{{ estrellas(promedioEntero()) }} {{ promedio() | number: '1.1-1' }}</span>
+            </header>
+
+            @if (auth.autenticado()) {
+              <form class="resena-form" (ngSubmit)="enviarResena(libro)">
+                <div class="estrellas-input" role="group" aria-label="Tu calificación">
+                  @for (n of [1, 2, 3, 4, 5]; track n) {
+                    <button
+                      type="button"
+                      [class.active]="n <= calificacion()"
+                      [attr.aria-label]="n + ' de 5 estrellas'"
+                      [attr.aria-pressed]="n <= calificacion()"
+                      (click)="calificacion.set(n)"
+                    >
+                      ★
+                    </button>
+                  }
+                </div>
+
+                <textarea
+                  name="comentario"
+                  [(ngModel)]="comentario"
+                  rows="3"
+                  maxlength="1000"
+                  placeholder="Comparte tu opinión (opcional)"
+                ></textarea>
+
+                @if (resenaError()) {
+                  <p class="resena-error">{{ resenaError() }}</p>
+                }
+
+                <div class="resena-acciones">
+                  <button type="submit" [disabled]="enviandoResena() || calificacion() === 0">
+                    {{
+                      enviandoResena()
+                        ? 'Guardando...'
+                        : miResena()
+                          ? 'Actualizar reseña'
+                          : 'Publicar reseña'
+                    }}
+                  </button>
+
+                  @if (miResena()) {
+                    <button type="button" class="resena-eliminar" (click)="eliminarMiResena(libro)">
+                      Eliminar
+                    </button>
+                  }
+                </div>
+              </form>
+            } @else {
+              <p class="resena-login">
+                <a routerLink="/login">Inicia sesión</a> para calificar y escribir una reseña.
+              </p>
+            }
+
+            @if (resenas().length > 0) {
+              <ul class="resena-lista">
+                @for (resena of resenas(); track resena._id) {
+                  <li class="resena-item">
+                    <div class="resena-cabecera">
+                      <strong>{{ resena.usuario?.nombre || 'Lector' }}</strong>
+                      <span class="resena-estrellas">{{ estrellas(resena.calificacion) }}</span>
+                    </div>
+                    @if (resena.comentario) {
+                      <p>{{ resena.comentario }}</p>
+                    }
+                    <time [attr.datetime]="resena.createdAt">
+                      {{ resena.createdAt | date: 'mediumDate' }}
+                    </time>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="resena-vacia">Todavía no hay reseñas. Sé el primero en opinar.</p>
+            }
+          </section>
 
           <div class="modal-footer">
             <span class="modal-price">{{

@@ -2,7 +2,9 @@
   <div class="auth-card">
     <p class="auth-eyebrow">Únete</p>
     <h1 class="auth-title">Crear cuenta</h1>
-    <p class="auth-subtitle">Regístrate para guardar tu historial de navegación.</p>
+    <p class="auth-subtitle">
+      Regístrate para guardar tus favoritos, estados de lectura y reseñas.
+    </p>
 
     <form (ngSubmit)="enviar()">
       <div class="auth-field">
@@ -37,6 +39,8 @@
           type="password"
           autocomplete="new-password"
           [(ngModel)]="password"
+          minlength="8"
+          maxlength="72"
           required
         />
       </div>

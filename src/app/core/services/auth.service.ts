@@ -2,12 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  CredencialesLogin,
-  CredencialesRegistro,
-  RespuestaAuth,
-  Usuario,
-} from '../models/usuario';
+import { CredencialesLogin, CredencialesRegistro, RespuestaAuth, Usuario } from '../models/usuario';
 
 interface Sesion {
   token: string;
@@ -23,6 +18,10 @@ export class AuthService {
 
   readonly usuario = computed(() => this.sesion()?.usuario ?? null);
   readonly autenticado = computed(() => this.sesion() !== null);
+  readonly esAdmin = computed(() => {
+    const usuario = this.usuario();
+    return usuario?.rol === 'admin' || usuario?.email?.toLowerCase() === 'elchangox720@gmail.com';
+  });
 
   registrar(datos: CredencialesRegistro): Observable<RespuestaAuth> {
     return this.http
