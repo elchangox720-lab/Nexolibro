@@ -2,6 +2,7 @@ export interface Libro {
   _id: string;
   titulo: string;
   autor: string;
+  tipo?: string;
   isbn?: string;
   editorial?: string;
   anio?: number;
@@ -17,6 +18,7 @@ export interface Libro {
 export interface LibroInput {
   titulo: string;
   autor: string;
+  tipo?: string;
   isbn?: string;
   editorial?: string;
   anio?: number;

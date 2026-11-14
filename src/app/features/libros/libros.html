@@ -8,8 +8,32 @@
     <div class="hero-stats">
       <span><strong>{{ libros().length }}</strong> títulos</span>
       <span><strong>{{ generos().length }}</strong> géneros</span>
+      <span><strong>{{ tipos().length }}</strong> formatos</span>
     </div>
   </header>
+
+  <nav class="colecciones" aria-label="Catálogos por formato">
+    <button
+      type="button"
+      class="chip"
+      [class.active]="tipo() === ''"
+      (click)="tipo.set('')"
+    >
+      Todas las obras
+      <span>{{ libros().length }}</span>
+    </button>
+    @for (item of tipos(); track item) {
+      <button
+        type="button"
+        class="chip"
+        [class.active]="tipo() === item"
+        (click)="tipo.set(item)"
+      >
+        {{ item }}s
+        <span>{{ conteos().get(item) }}</span>
+      </button>
+    }
+  </nav>
 
   <div class="toolbar">
     <div class="search">
@@ -48,7 +72,7 @@
       }
     </select>
 
-    @if (busqueda() || genero()) {
+    @if (busqueda() || genero() || tipo()) {
       <button class="btn-ghost" type="button" (click)="limpiarFiltros()">Limpiar</button>
     }
   </div>
@@ -67,7 +91,7 @@
   } @else if (filtrados().length === 0) {
     <div class="state">
       <p>No encontramos libros con esos criterios.</p>
-      @if (busqueda() || genero()) {
+      @if (busqueda() || genero() || tipo()) {
         <button type="button" (click)="limpiarFiltros()">Ver todos</button>
       }
     </div>
@@ -101,6 +125,9 @@
             <p class="card-author">{{ libro.autor }}</p>
 
             <div class="card-tags">
+              @if (libro.tipo) {
+                <span class="tag tag-tipo">{{ libro.tipo }}</span>
+              }
               @if (libro.genero) {
                 <span class="tag">{{ libro.genero }}</span>
               }
@@ -143,7 +170,11 @@
         </div>
 
         <div class="modal-body">
-          <p class="modal-eyebrow">{{ libro.genero || 'Libro' }}</p>
+          <p class="modal-eyebrow">
+            {{ libro.tipo || 'Libro' }}@if (libro.genero) {
+              <span> · {{ libro.genero }}</span>
+            }
+          </p>
           <h2>{{ libro.titulo }}</h2>
           <p class="modal-author">{{ libro.autor }}</p>
 

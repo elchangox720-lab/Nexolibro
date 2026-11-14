@@ -32,25 +32,47 @@ export class Libros implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly busqueda = signal('');
   protected readonly genero = signal('');
+  protected readonly tipo = signal('');
   protected readonly seleccionado = signal<Libro | null>(null);
 
   protected readonly generos = computed(() =>
     [...new Set(this.libros().map((libro) => libro.genero).filter((g): g is string => !!g))].sort(),
   );
 
+  protected readonly tipos = computed(() => {
+    const orden = ['Novela', 'Manga', 'Manhwa', 'Cómic'];
+    const presentes = new Set(this.libros().map((libro) => libro.tipo).filter((t): t is string => !!t));
+
+    return orden.filter((item) => presentes.has(item));
+  });
+
+  protected readonly conteos = computed(() => {
+    const mapa = new Map<string, number>();
+
+    for (const libro of this.libros()) {
+      if (libro.tipo) {
+        mapa.set(libro.tipo, (mapa.get(libro.tipo) ?? 0) + 1);
+      }
+    }
+
+    return mapa;
+  });
+
   protected readonly filtrados = computed(() => {
     const query = this.busqueda().trim().toLowerCase();
     const genero = this.genero();
+    const tipo = this.tipo();
 
     return this.libros().filter((libro) => {
       const coincideGenero = !genero || libro.genero === genero;
+      const coincideTipo = !tipo || libro.tipo === tipo;
       const coincideTexto =
         !query ||
-        [libro.titulo, libro.autor, libro.editorial, libro.genero, libro.isbn].some((valor) =>
-          valor?.toLowerCase().includes(query),
+        [libro.titulo, libro.autor, libro.editorial, libro.genero, libro.tipo, libro.isbn].some(
+          (valor) => valor?.toLowerCase().includes(query),
         );
 
-      return coincideGenero && coincideTexto;
+      return coincideGenero && coincideTipo && coincideTexto;
     });
   });
 
@@ -77,6 +99,7 @@ export class Libros implements OnInit {
   protected limpiarFiltros(): void {
     this.busqueda.set('');
     this.genero.set('');
+    this.tipo.set('');
   }
 
   protected seleccionar(libro: Libro): void {
