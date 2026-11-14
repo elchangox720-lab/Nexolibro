@@ -1,7 +1,18 @@
 <header class="app-header">
-  <a class="app-brand" routerLink="/libros">{{ title() }}</a>
+  <a class="app-brand" routerLink="/libros">
+    <span class="app-brand-mark">N</span>
+    <span>Nexolibro</span>
+  </a>
+
+  <nav class="app-nav">
+    <a routerLink="/libros" routerLinkActive="active">Catálogo</a>
+  </nav>
 </header>
 
 <main class="app-main">
   <router-outlet />
 </main>
+
+<footer class="app-footer">
+  Nexolibro · Encuentra tu próxima lectura
+</footer>

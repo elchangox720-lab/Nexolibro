@@ -1,29 +1,103 @@
 <section class="libros">
-  <header class="libros-header">
-    <h1>Libros</h1>
-    <button type="button" (click)="cargar()">Recargar</button>
+  <header class="hero">
+    <p class="hero-eyebrow">Catálogo</p>
+    <h1>Encuentra tu próxima lectura</h1>
+    <p class="hero-subtitle">
+      Explora nuestra colección de libros y descubre tu próximo favorito.
+    </p>
+    <div class="hero-stats">
+      <span><strong>{{ libros().length }}</strong> títulos</span>
+      <span><strong>{{ generos().length }}</strong> géneros</span>
+    </div>
   </header>
 
+  <div class="toolbar">
+    <div class="search">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Buscar por título, autor o editorial"
+        aria-label="Buscar libros"
+        [value]="busqueda()"
+        (input)="busqueda.set($any($event.target).value)"
+      />
+    </div>
+
+    <select
+      aria-label="Filtrar por género"
+      [value]="genero()"
+      (change)="genero.set($any($event.target).value)"
+    >
+      <option value="">Todos los géneros</option>
+      @for (item of generos(); track item) {
+        <option [value]="item">{{ item }}</option>
+      }
+    </select>
+
+    @if (busqueda() || genero()) {
+      <button class="btn-ghost" type="button" (click)="limpiarFiltros()">Limpiar</button>
+    }
+  </div>
+
   @if (cargando()) {
-    <p class="estado">Cargando libros...</p>
+    <div class="grid">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="card-skeleton"></div>
+      }
+    </div>
   } @else if (error()) {
-    <p class="estado error">{{ error() }}</p>
-  } @else if (libros().length === 0) {
-    <p class="estado">Todavía no hay libros registrados.</p>
+    <div class="state error">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (filtrados().length === 0) {
+    <div class="state">
+      <p>No encontramos libros con esos criterios.</p>
+      @if (busqueda() || genero()) {
+        <button type="button" (click)="limpiarFiltros()">Ver todos</button>
+      }
+    </div>
   } @else {
-    <ul class="libros-lista">
-      @for (libro of libros(); track libro._id) {
-        <li class="libro">
-          <div class="libro-info">
-            <strong>{{ libro.titulo }}</strong>
-            <span class="autor">{{ libro.autor }}</span>
-            @if (libro.genero) {
-              <span class="genero">{{ libro.genero }}</span>
-            }
+    <ul class="grid">
+      @for (libro of filtrados(); track libro._id) {
+        <li class="card">
+          <div class="card-cover" [style.background]="portada(libro)">
+            <span class="card-initial">{{ libro.titulo.charAt(0) }}</span>
           </div>
-          <div class="libro-meta">
-            <span>{{ libro.precio | currency: 'MXN' }}</span>
-            <span>{{ libro.stock }} en stock</span>
+
+          <div class="card-body">
+            <h2 class="card-title">{{ libro.titulo }}</h2>
+            <p class="card-author">{{ libro.autor }}</p>
+
+            <div class="card-tags">
+              @if (libro.genero) {
+                <span class="tag">{{ libro.genero }}</span>
+              }
+              <span class="stock" [class.agotado]="libro.stock === 0">
+                {{ libro.stock === 0 ? 'Agotado' : libro.stock + ' en stock' }}
+              </span>
+            </div>
+
+            <div class="card-footer">
+              <span class="price">{{ libro.precio | currency: 'MXN' }}</span>
+              @if (libro.anio) {
+                <span class="year">{{ libro.anio }}</span>
+              }
+            </div>
           </div>
         </li>
       }

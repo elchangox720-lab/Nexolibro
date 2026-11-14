@@ -1,77 +1,294 @@
-.libros-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+.hero {
+  margin-bottom: 2.25rem;
+}
 
-  h1 {
-    margin: 0;
-    font-size: 1.75rem;
-    color: #111827;
+.hero-eyebrow {
+  margin: 0 0 0.85rem;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0 0 0.85rem;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  max-width: 55ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 1.75rem;
+  margin-top: 1.4rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+
+  strong {
+    color: var(--gold-soft);
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: rgba(22, 22, 31, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 1 1 280px;
+  align-items: center;
+
+  svg {
+    position: absolute;
+    left: 0.95rem;
+    color: var(--text-muted);
+    pointer-events: none;
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border: 0;
-    border-radius: 0.5rem;
-    background: #1e3a8a;
-    color: #fff;
-    font-weight: 500;
-    cursor: pointer;
+  input {
+    width: 100%;
+    padding: 0.72rem 0.95rem 0.72rem 2.7rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
 
-    &:hover {
-      background: #1d4ed8;
+    &::placeholder {
+      color: #6f6f83;
+    }
+
+    &:focus {
+      border-color: rgba(212, 175, 55, 0.65);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
     }
   }
 }
 
-.estado {
-  color: #6b7280;
+select {
+  padding: 0.72rem 2.2rem 0.72rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
 
-  &.error {
-    color: #b91c1c;
+  &:focus {
+    border-color: rgba(212, 175, 55, 0.65);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
   }
 }
 
-.libros-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.btn-ghost,
+.state button,
+.state .btn-ghost {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.35rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.libro {
+.card {
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface), var(--bg-elevated));
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow:
+      0 28px 50px -24px rgba(0, 0, 0, 0.9),
+      0 0 0 1px rgba(212, 175, 55, 0.15);
+  }
+}
+
+.card-cover {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.55));
+  }
+}
+
+.card-initial {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 4rem;
+  font-weight: 800;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+}
+
+.card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem 1.1rem 1.2rem;
+}
+
+.card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--text);
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 1.12rem;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.card-author {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+.tag {
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.16);
+  color: #c4b5fd;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.stock {
+  color: var(--success);
+  font-size: 0.78rem;
+
+  &.agotado {
+    color: var(--danger);
+  }
+}
+
+.card-footer {
+  display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  background: #fff;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+}
 
-  .libro-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.price {
+  color: var(--gold-soft);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.year {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.state {
+  padding: 4rem 1.25rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: rgba(22, 22, 31, 0.4);
+  color: var(--text-muted);
+  text-align: center;
+
+  p {
+    margin: 0 0 1rem;
   }
 
-  .autor {
-    color: #4b5563;
+  &.error {
+    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--danger);
   }
 
-  .genero {
-    font-size: 0.8rem;
-    color: #6d28d9;
+  button {
+    border-color: var(--border-strong);
+  }
+}
+
+.card-skeleton {
+  height: 380px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(100deg, var(--surface) 30%, var(--surface-2) 50%, var(--surface) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
   }
 
-  .libro-meta {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.9rem;
-    color: #374151;
+  to {
+    background-position: -200% 0;
   }
 }

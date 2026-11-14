@@ -1,37 +1,79 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
-  background: #f6f7fb;
-  color: #1f2937;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
 }
 
 .app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: #1e3a8a;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem clamp(1rem, 4vw, 3rem);
+  background: rgba(8, 8, 12, 0.72);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
 }
 
 .app-brand {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.02rem;
-  text-transform: capitalize;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.app-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+  color: #1a1200;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  box-shadow: 0 6px 18px -6px rgba(212, 175, 55, 0.8);
+}
+
+.app-nav a {
+  display: inline-block;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover,
+  &.active {
+    color: var(--text);
+    background: var(--surface-2);
+  }
 }
 
 .app-main {
-  max-width: 960px;
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.app-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
 }
