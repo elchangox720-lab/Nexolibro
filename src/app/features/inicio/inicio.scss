@@ -195,17 +195,6 @@
   }
 }
 
-.red--pendiente {
-  border: 1px dashed var(--border);
-  opacity: 0.45;
-  cursor: not-allowed;
-
-  &:hover {
-    background: transparent;
-    color: var(--text-muted);
-  }
-}
-
 .portada-credito {
   position: absolute;
   bottom: clamp(1.4rem, 4vw, 2.2rem);
