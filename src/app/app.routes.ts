@@ -3,6 +3,11 @@ import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./features/inicio/inicio').then((m) => m.Inicio),
+  },
+  {
     path: 'libros',
     loadComponent: () => import('./features/libros/libros').then((m) => m.Libros),
   },
@@ -19,6 +24,5 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/historial/historial').then((m) => m.Historial),
   },
-  { path: '', pathMatch: 'full', redirectTo: 'libros' },
-  { path: '**', redirectTo: 'libros' },
+  { path: '**', redirectTo: '' },
 ];

@@ -137,6 +137,11 @@
   padding: clamp(1.5rem, 4vw, 3rem);
 }
 
+.app-main--inicio {
+  max-width: none;
+  padding: 0;
+}
+
 .app-footer {
   padding: 1.5rem;
   border-top: 1px solid var(--border);
