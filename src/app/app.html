@@ -12,6 +12,7 @@
         @if (auth.esAdmin()) {
           <a routerLink="/admin" routerLinkActive="active">Admin</a>
         }
+        <a routerLink="/alquileres" routerLinkActive="active">Alquileres</a>
         <a routerLink="/historial" routerLinkActive="active">Historial</a>
         <span class="app-user">{{ auth.usuario()?.nombre }}</span>
         <button class="app-btn" type="button" (click)="cerrarSesion()">Salir</button>

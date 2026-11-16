@@ -1,12 +1,13 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Libro, LibroInput } from '../../core/models/libro';
 import { LibroService } from '../../core/services/libro.service';
 
 @Component({
   selector: 'app-admin',
-  imports: [CurrencyPipe, FormsModule],
+  imports: [CurrencyPipe, FormsModule, RouterLink],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })

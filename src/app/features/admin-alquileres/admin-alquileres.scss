@@ -1,0 +1,342 @@
+:host {
+  display: block;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.55rem;
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.cabecera h1 {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.9rem, 4vw, 2.7rem);
+  line-height: 1.1;
+}
+
+.subtitulo {
+  max-width: 60ch;
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.volver {
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+  }
+}
+
+.aviso {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 12px;
+  background: rgba(52, 211, 153, 0.08);
+  color: var(--success);
+  font-size: 0.9rem;
+
+  &--error {
+    border-color: rgba(248, 113, 113, 0.4);
+    background: rgba(248, 113, 113, 0.08);
+    color: var(--danger);
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+
+  input {
+    flex: 1 1 230px;
+    padding: 0.68rem 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+
+    &::placeholder {
+      color: var(--input-placeholder);
+    }
+
+    &:focus {
+      border-color: rgba(212, 175, 55, 0.65);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    }
+  }
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    span {
+      padding: 0.04rem 0.38rem;
+      border-radius: 999px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 0.68rem;
+    }
+
+    &:hover {
+      border-color: rgba(212, 175, 55, 0.5);
+      color: var(--text);
+    }
+
+    &.active {
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.14);
+      color: var(--text);
+    }
+  }
+}
+
+.estado {
+  padding: 3.5rem 1.25rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-align: center;
+
+  &--error {
+    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--danger);
+  }
+
+  button {
+    margin-top: 0.8rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+  }
+}
+
+.tabla {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface), var(--bg-elevated));
+  box-shadow: var(--shadow);
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(170px, 1.5fr) 0.8fr 0.8fr 0.9fr auto;
+  align-items: center;
+  gap: 1rem;
+  min-width: 940px;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--border);
+
+  > span {
+    color: var(--text-muted);
+    font-size: 0.84rem;
+  }
+
+  &:not(.fila--head):hover {
+    background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+  }
+
+  &--vencida {
+    border-left: 2px solid rgba(248, 113, 113, 0.7);
+  }
+}
+
+.fila--head {
+  border-top: 0;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.libro {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+
+  img,
+  .inicial {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 56px;
+    border-radius: 6px;
+  }
+
+  img {
+    object-fit: cover;
+  }
+
+  .inicial {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #fff;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.9rem;
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+}
+
+.usuario {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 0.86rem;
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+  }
+}
+
+.estado-alquiler {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+
+  small {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  padding: 0.18rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  &--danger {
+    border-color: rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.12);
+    color: var(--danger);
+  }
+
+  &--exito {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--success);
+  }
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+
+  button {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.78rem;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+}
+
+.devuelto-por {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  text-align: right;
+}

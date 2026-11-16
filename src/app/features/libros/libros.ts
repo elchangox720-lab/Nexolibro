@@ -12,9 +12,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { retry, throwError, timer } from 'rxjs';
+import { Alquiler } from '../../core/models/alquiler';
 import { EstadoLectura } from '../../core/models/biblioteca';
 import { Libro } from '../../core/models/libro';
 import { Resena } from '../../core/models/resena';
+import { AlquilerService } from '../../core/services/alquiler.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BibliotecaService } from '../../core/services/biblioteca.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
@@ -33,6 +35,7 @@ export class Libros implements OnInit {
   private readonly historialService = inject(HistorialService);
   private readonly bibliotecaService = inject(BibliotecaService);
   private readonly resenaService = inject(ResenaService);
+  private readonly alquilerService = inject(AlquilerService);
   private readonly catalogo = inject(CatalogoService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
@@ -62,6 +65,11 @@ export class Libros implements OnInit {
   protected readonly estados = signal<Map<string, EstadoLectura>>(new Map());
   protected readonly soloFavoritos = signal(false);
   protected readonly estadoFiltro = signal<'' | EstadoLectura>('');
+
+  protected readonly alquileresActivos = signal<Map<string, Alquiler>>(new Map());
+  protected readonly procesandoAlquiler = signal<string | null>(null);
+  protected readonly alquilerAviso = signal<string | null>(null);
+  protected readonly alquilerError = signal<string | null>(null);
 
   protected readonly resenas = signal<Resena[]>([]);
   protected readonly promedio = signal(0);
@@ -149,6 +157,7 @@ export class Libros implements OnInit {
   ngOnInit(): void {
     this.cargar();
     this.cargarBiblioteca();
+    this.cargarAlquileres();
 
     this.catalogo.reinicios$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.limpiarFiltros();
@@ -276,8 +285,79 @@ export class Libros implements OnInit {
     });
   }
 
+  protected alquilerActivo(libro: Libro): Alquiler | null {
+    return this.alquileresActivos().get(libro._id) ?? null;
+  }
+
+  protected alquilar(libro: Libro, evento?: Event): void {
+    evento?.stopPropagation();
+
+    if (!this.auth.autenticado()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (libro.stock < 1) {
+      this.alquilerError.set('No hay ejemplares disponibles de este libro.');
+      return;
+    }
+
+    this.procesandoAlquiler.set(libro._id);
+    this.alquilerAviso.set(null);
+    this.alquilerError.set(null);
+
+    this.alquilerService.alquilar(libro._id).subscribe({
+      next: (alquiler) => {
+        const activos = new Map(this.alquileresActivos());
+        activos.set(libro._id, alquiler);
+        this.alquileresActivos.set(activos);
+        this.cambiarStockLibro(libro._id, -1);
+        this.procesandoAlquiler.set(null);
+        this.alquilerAviso.set(`Alquiler registrado por ${alquiler.dias} días.`);
+      },
+      error: (err) => {
+        this.procesandoAlquiler.set(null);
+        this.alquilerError.set(err?.error?.message ?? 'No se pudo registrar el alquiler.');
+      },
+    });
+  }
+
+  protected devolverAlquiler(libro: Libro, evento?: Event): void {
+    evento?.stopPropagation();
+
+    const alquiler = this.alquilerActivo(libro);
+    if (!alquiler) {
+      return;
+    }
+
+    if (!confirm(`¿Confirmas la devolución de "${libro.titulo}"?`)) {
+      return;
+    }
+
+    this.procesandoAlquiler.set(libro._id);
+    this.alquilerAviso.set(null);
+    this.alquilerError.set(null);
+
+    this.alquilerService.devolver(alquiler._id).subscribe({
+      next: () => {
+        const activos = new Map(this.alquileresActivos());
+        activos.delete(libro._id);
+        this.alquileresActivos.set(activos);
+        this.cambiarStockLibro(libro._id, 1);
+        this.procesandoAlquiler.set(null);
+        this.alquilerAviso.set('Devolución registrada. ¡Gracias!');
+      },
+      error: (err) => {
+        this.procesandoAlquiler.set(null);
+        this.alquilerError.set(err?.error?.message ?? 'No se pudo registrar la devolución.');
+      },
+    });
+  }
+
   protected seleccionar(libro: Libro): void {
     this.seleccionado.set(libro);
+    this.alquilerAviso.set(null);
+    this.alquilerError.set(null);
     this.cargarResenas(libro._id);
 
     if (this.auth.autenticado()) {
@@ -379,6 +459,33 @@ export class Libros implements OnInit {
       },
       error: () => undefined,
     });
+  }
+
+  private cargarAlquileres(): void {
+    if (!this.auth.autenticado()) {
+      return;
+    }
+
+    this.alquilerService.listar().subscribe({
+      next: (alquileres) => {
+        const activos = new Map<string, Alquiler>();
+        for (const alquiler of alquileres) {
+          if (alquiler.estado === 'activo') {
+            activos.set(alquiler.libro, alquiler);
+          }
+        }
+        this.alquileresActivos.set(activos);
+      },
+      error: () => undefined,
+    });
+  }
+
+  private cambiarStockLibro(libroId: string, delta: number): void {
+    const actualizar = (libro: Libro): Libro =>
+      libro._id === libroId ? { ...libro, stock: Math.max(0, libro.stock + delta) } : libro;
+
+    this.libros.update((libros) => libros.map(actualizar));
+    this.seleccionado.update((libro) => (libro ? actualizar(libro) : null));
   }
 
   private cargarResenas(libroId: string): void {

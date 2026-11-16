@@ -192,6 +192,40 @@
                 <span class="year">{{ libro.anio }}</span>
               }
             </div>
+
+            <div class="card-acciones">
+              @if (alquilerActivo(libro); as alquiler) {
+                <button
+                  class="card-alquilar card-alquilar--devolver"
+                  type="button"
+                  [disabled]="procesandoAlquiler() === libro._id"
+                  [attr.aria-label]="'Devolver ' + libro.titulo"
+                  (click)="devolverAlquiler(libro, $event)"
+                  (keydown.enter)="$event.stopPropagation()"
+                  (keydown.space)="$event.stopPropagation()"
+                >
+                  {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
+                </button>
+              } @else {
+                <button
+                  class="card-alquilar"
+                  type="button"
+                  [disabled]="libro.stock === 0 || procesandoAlquiler() === libro._id"
+                  [attr.aria-label]="'Alquilar ' + libro.titulo"
+                  (click)="alquilar(libro, $event)"
+                  (keydown.enter)="$event.stopPropagation()"
+                  (keydown.space)="$event.stopPropagation()"
+                >
+                  {{
+                    libro.stock === 0
+                      ? 'Sin stock'
+                      : procesandoAlquiler() === libro._id
+                        ? 'Registrando...'
+                        : 'Alquilar'
+                  }}
+                </button>
+              }
+            </div>
           </div>
         </li>
       }
@@ -256,6 +290,59 @@
               <dd>{{ libro.stock === 0 ? 'Agotado' : libro.stock + ' disponibles' }}</dd>
             </div>
           </dl>
+
+          <div class="modal-alquiler">
+            @if (auth.autenticado()) {
+              @if (alquilerActivo(libro); as alquiler) {
+                <div class="alquiler-activo">
+                  <span>
+                    Alquilado hasta el {{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}
+                    @if (alquiler.vencido) {
+                      (vencido)
+                    }
+                  </span>
+                  <button
+                    class="modal-btn modal-btn-devolver"
+                    type="button"
+                    [disabled]="procesandoAlquiler() === libro._id"
+                    (click)="devolverAlquiler(libro, $event)"
+                  >
+                    {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
+                  </button>
+                </div>
+              } @else {
+                <button
+                  class="modal-btn modal-btn-alquilar"
+                  type="button"
+                  [disabled]="libro.stock === 0 || procesandoAlquiler() === libro._id"
+                  (click)="alquilar(libro, $event)"
+                >
+                  {{
+                    libro.stock === 0
+                      ? 'Sin ejemplares disponibles'
+                      : procesandoAlquiler() === libro._id
+                        ? 'Registrando...'
+                        : 'Alquilar por 14 días'
+                  }}
+                </button>
+              }
+            } @else {
+              <button
+                class="modal-btn modal-btn-alquilar"
+                type="button"
+                (click)="alquilar(libro, $event)"
+              >
+                Inicia sesión para alquilar
+              </button>
+            }
+
+            @if (alquilerAviso()) {
+              <p class="alquiler-aviso">{{ alquilerAviso() }}</p>
+            }
+            @if (alquilerError()) {
+              <p class="alquiler-error">{{ alquilerError() }}</p>
+            }
+          </div>
 
           <div class="modal-acciones">
             <button

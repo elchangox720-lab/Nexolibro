@@ -1,0 +1,136 @@
+<section class="admin-alquileres">
+  <header class="cabecera">
+    <div>
+      <p class="eyebrow">Administración</p>
+      <h1>Alquileres</h1>
+      <p class="subtitulo">
+        Controla los préstamos activos, vencidos y devueltos de todos los usuarios.
+      </p>
+    </div>
+    <a class="volver" routerLink="/admin">Volver a libros</a>
+  </header>
+
+  @if (aviso()) {
+    <p class="aviso">{{ aviso() }}</p>
+  }
+
+  @if (accionError()) {
+    <p class="aviso aviso--error">{{ accionError() }}</p>
+  }
+
+  <div class="toolbar">
+    <div class="filtros">
+      <button type="button" [class.active]="filtro() === 'activos'" (click)="filtro.set('activos')">
+        Activos <span>{{ resumen().activos }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="filtro() === 'vencidos'"
+        (click)="filtro.set('vencidos')"
+      >
+        Vencidos <span>{{ resumen().vencidos }}</span>
+      </button>
+      <button
+        type="button"
+        [class.active]="filtro() === 'devueltos'"
+        (click)="filtro.set('devueltos')"
+      >
+        Devueltos <span>{{ resumen().devueltos }}</span>
+      </button>
+      <button type="button" [class.active]="filtro() === 'todos'" (click)="filtro.set('todos')">
+        Todos <span>{{ resumen().todos }}</span>
+      </button>
+    </div>
+
+    <input
+      type="search"
+      placeholder="Buscar por libro o usuario"
+      aria-label="Buscar alquileres"
+      [value]="busqueda()"
+      (input)="busqueda.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (cargando()) {
+    <div class="estado">Cargando alquileres...</div>
+  } @else if (error()) {
+    <div class="estado estado--error">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (!filtrados().length) {
+    <div class="estado">No hay alquileres que coincidan con el filtro.</div>
+  } @else {
+    <div class="tabla">
+      <div class="fila fila--head">
+        <span>Libro</span>
+        <span>Usuario</span>
+        <span>Alquilado</span>
+        <span>Vence</span>
+        <span>Estado</span>
+        <span>Acciones</span>
+      </div>
+
+      @for (alquiler of filtrados(); track alquiler._id) {
+        <article class="fila" [class.fila--vencida]="alquiler.vencido">
+          <div class="libro">
+            @if (alquiler.portada) {
+              <img
+                [src]="alquiler.portada"
+                [alt]="'Portada de ' + alquiler.titulo"
+                loading="lazy"
+              />
+            } @else {
+              <span class="inicial">{{ alquiler.titulo.charAt(0) }}</span>
+            }
+            <div>
+              <strong>{{ alquiler.titulo }}</strong>
+              <small>{{ alquiler.autor || 'Autor desconocido' }}</small>
+            </div>
+          </div>
+
+          <div class="usuario">
+            <strong>{{ datosUsuario(alquiler)?.nombre || 'Usuario eliminado' }}</strong>
+            <small>{{ datosUsuario(alquiler)?.email || '—' }}</small>
+          </div>
+
+          <span>{{ alquiler.fechaAlquiler | date: 'dd/MM/yyyy' }}</span>
+          <span>{{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}</span>
+
+          <div class="estado-alquiler">
+            @if (alquiler.estado === 'devuelto') {
+              <span class="badge badge--exito">Devuelto</span>
+              <small>{{ alquiler.fechaDevolucion | date: 'dd/MM/yyyy' }}</small>
+            } @else if (alquiler.vencido) {
+              <span class="badge badge--danger">Vencido</span>
+              <small>{{ alquiler.diasRestantes }} días</small>
+            } @else {
+              <span class="badge">Activo</span>
+              <small>{{ alquiler.diasRestantes }} días restantes</small>
+            }
+          </div>
+
+          <div class="acciones">
+            @if (alquiler.estado === 'activo') {
+              <button
+                type="button"
+                [disabled]="devolviendo() === alquiler._id"
+                (click)="devolver(alquiler)"
+              >
+                {{ devolviendo() === alquiler._id ? 'Registrando...' : 'Devolver' }}
+              </button>
+            } @else {
+              <span class="devuelto-por">
+                @if (alquiler.devueltoPor === 'admin') {
+                  Por administración
+                } @else {
+                  Por el usuario
+                }
+              </span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>

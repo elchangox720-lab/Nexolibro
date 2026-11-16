@@ -21,9 +21,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/registro/registro').then((m) => m.Registro),
   },
   {
+    path: 'alquileres',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/alquileres/alquileres').then((m) => m.Alquileres),
+  },
+  {
     path: 'historial',
     canActivate: [authGuard],
     loadComponent: () => import('./features/historial/historial').then((m) => m.Historial),
+  },
+  {
+    path: 'admin/alquileres',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/admin-alquileres/admin-alquileres').then((m) => m.AdminAlquileres),
   },
   {
     path: 'admin',

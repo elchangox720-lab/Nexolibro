@@ -5,7 +5,10 @@
       <h1>Gestionar libros</h1>
       <p class="admin-subtitle">Crea, edita o elimina títulos del catálogo.</p>
     </div>
-    <button class="admin-nuevo" type="button" (click)="nuevo()">+ Nuevo libro</button>
+    <div class="admin-head-acciones">
+      <a class="admin-enlace" routerLink="/admin/alquileres">Gestionar alquileres</a>
+      <button class="admin-nuevo" type="button" (click)="nuevo()">+ Nuevo libro</button>
+    </div>
   </header>
 
   <div class="admin-toolbar">

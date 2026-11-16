@@ -1,0 +1,133 @@
+<section class="alquileres">
+  <header class="alquileres-head">
+    <div>
+      <p class="eyebrow">Préstamos</p>
+      <h1>Mis alquileres</h1>
+      <p class="subtitulo">
+        Consulta tus libros prestados, sus fechas de vencimiento y registra las devoluciones.
+      </p>
+    </div>
+    <a class="btn-catalogo" routerLink="/libros">Explorar catálogo</a>
+  </header>
+
+  @if (aviso()) {
+    <p class="aviso">{{ aviso() }}</p>
+  }
+
+  @if (accionError()) {
+    <p class="aviso aviso--error">{{ accionError() }}</p>
+  }
+
+  @if (cargando()) {
+    <div class="estado">Cargando alquileres...</div>
+  } @else if (error()) {
+    <div class="estado estado--error">
+      <p>{{ error() }}</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else {
+    <section class="bloque">
+      <header class="bloque-head">
+        <h2>
+          Activos <span>{{ activos().length }}</span>
+        </h2>
+        <p>Los alquileres tienen una duración de 14 días por defecto.</p>
+      </header>
+
+      @if (!activos().length) {
+        <div class="vacio">
+          <p>No tienes alquileres activos.</p>
+          <a routerLink="/libros">Buscar un libro para alquilar</a>
+        </div>
+      } @else {
+        <ul class="lista">
+          @for (alquiler of activos(); track alquiler._id) {
+            <li class="item" [class.item--vencido]="alquiler.vencido">
+              <div class="portada">
+                @if (alquiler.portada) {
+                  <img [src]="alquiler.portada" [alt]="'Portada de ' + alquiler.titulo" />
+                } @else {
+                  <span>{{ alquiler.titulo.charAt(0) }}</span>
+                }
+              </div>
+
+              <div class="info">
+                <div class="titulo-fila">
+                  <strong>{{ alquiler.titulo }}</strong>
+                  @if (alquiler.vencido) {
+                    <span class="badge badge--danger">Vencido</span>
+                  } @else {
+                    <span class="badge">{{ alquiler.diasRestantes }} días restantes</span>
+                  }
+                </div>
+                <span class="autor">{{ alquiler.autor || 'Autor desconocido' }}</span>
+                <dl class="fechas">
+                  <div>
+                    <dt>Alquilado</dt>
+                    <dd>{{ alquiler.fechaAlquiler | date: 'dd/MM/yyyy' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Vence</dt>
+                    <dd>{{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <button
+                class="btn-devolver"
+                type="button"
+                [disabled]="devolviendo() === alquiler._id"
+                (click)="devolver(alquiler)"
+              >
+                {{ devolviendo() === alquiler._id ? 'Registrando...' : 'Devolver' }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="bloque">
+      <header class="bloque-head">
+        <h2>
+          Historial <span>{{ historial().length }}</span>
+        </h2>
+        <p>Devoluciones que ya registraste.</p>
+      </header>
+
+      @if (!historial().length) {
+        <div class="vacio">
+          <p>Todavía no has devuelto ningún libro.</p>
+        </div>
+      } @else {
+        <ul class="lista">
+          @for (alquiler of historial(); track alquiler._id) {
+            <li class="item item--devuelto">
+              <div class="portada">
+                @if (alquiler.portada) {
+                  <img [src]="alquiler.portada" [alt]="'Portada de ' + alquiler.titulo" />
+                } @else {
+                  <span>{{ alquiler.titulo.charAt(0) }}</span>
+                }
+              </div>
+
+              <div class="info">
+                <div class="titulo-fila">
+                  <strong>{{ alquiler.titulo }}</strong>
+                  <span class="badge badge--exito">Devuelto</span>
+                </div>
+                <span class="autor">{{ alquiler.autor || 'Autor desconocido' }}</span>
+                <span class="devolucion">
+                  Devuelto el {{ alquiler.fechaDevolucion | date: 'dd/MM/yyyy' }}
+                  @if (alquiler.devueltoPor === 'admin') {
+                    · registrado por administración
+                  }
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</section>

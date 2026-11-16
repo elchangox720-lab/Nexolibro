@@ -32,6 +32,29 @@
   color: var(--text-muted);
 }
 
+.admin-head-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-enlace {
+  padding: 0.68rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+  }
+}
+
 .admin-nuevo {
   padding: 0.7rem 1.2rem;
   border: 0;

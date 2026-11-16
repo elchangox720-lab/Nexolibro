@@ -319,6 +319,47 @@ select {
   font-size: 0.85rem;
 }
 
+.card-acciones {
+  display: flex;
+  margin-top: 0.7rem;
+}
+
+.card-alquilar {
+  flex: 1;
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+  color: #1a1200;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &--devolver {
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text);
+
+    &:hover:not(:disabled) {
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.1);
+    }
+  }
+}
+
 .state {
   padding: 4rem 1.25rem;
   border: 1px dashed var(--border-strong);
@@ -486,6 +527,71 @@ select {
     border-color: var(--gold);
     background: rgba(212, 175, 55, 0.1);
   }
+}
+
+.modal-alquiler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.modal-btn-alquilar {
+  border: 0;
+  background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+  color: #1a1200;
+  font-weight: 700;
+  text-align: center;
+
+  &:hover {
+    background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+    filter: brightness(1.06);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: none;
+  }
+}
+
+.modal-btn-devolver {
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.alquiler-activo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.alquiler-aviso,
+.alquiler-error {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.alquiler-aviso {
+  color: var(--success);
+}
+
+.alquiler-error {
+  color: var(--danger);
 }
 
 .modal-close {
