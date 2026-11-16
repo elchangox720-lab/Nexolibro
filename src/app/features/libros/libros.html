@@ -212,7 +212,7 @@
                   type="button"
                   [disabled]="libro.stock === 0 || procesandoAlquiler() === libro._id"
                   [attr.aria-label]="'Alquilar ' + libro.titulo"
-                  (click)="alquilar(libro, $event)"
+                  (click)="pedirCedula(libro, $event)"
                   (keydown.enter)="$event.stopPropagation()"
                   (keydown.space)="$event.stopPropagation()"
                 >
@@ -310,12 +310,47 @@
                     {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
                   </button>
                 </div>
+              } @else if (pidiendoCedula()) {
+                <form class="alquiler-form" (ngSubmit)="confirmarAlquiler(libro)">
+                  <label for="cedula-alquiler">Cédula de ciudadanía</label>
+                  <input
+                    id="cedula-alquiler"
+                    name="cedula"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    maxlength="10"
+                    placeholder="Ej. 1023456789"
+                    [(ngModel)]="cedula"
+                    required
+                  />
+                  <p>Necesitamos tu número de cédula para registrar el préstamo.</p>
+                  <div class="alquiler-form-acciones">
+                    <button
+                      class="modal-btn modal-btn-alquilar"
+                      type="submit"
+                      [disabled]="procesandoAlquiler() === libro._id"
+                    >
+                      {{
+                        procesandoAlquiler() === libro._id ? 'Registrando...' : 'Confirmar alquiler'
+                      }}
+                    </button>
+                    <button
+                      class="modal-btn"
+                      type="button"
+                      [disabled]="procesandoAlquiler() === libro._id"
+                      (click)="pidiendoCedula.set(false); cedula = ''"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
               } @else {
                 <button
                   class="modal-btn modal-btn-alquilar"
                   type="button"
                   [disabled]="libro.stock === 0 || procesandoAlquiler() === libro._id"
-                  (click)="alquilar(libro, $event)"
+                  (click)="pedirCedula(libro, $event)"
                 >
                   {{
                     libro.stock === 0
@@ -327,11 +362,7 @@
                 </button>
               }
             } @else {
-              <button
-                class="modal-btn modal-btn-alquilar"
-                type="button"
-                (click)="alquilar(libro, $event)"
-              >
+              <button class="modal-btn modal-btn-alquilar" type="button" (click)="irALogin()">
                 Inicia sesión para alquilar
               </button>
             }

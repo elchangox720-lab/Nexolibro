@@ -70,6 +70,10 @@ export class Libros implements OnInit {
   protected readonly procesandoAlquiler = signal<string | null>(null);
   protected readonly alquilerAviso = signal<string | null>(null);
   protected readonly alquilerError = signal<string | null>(null);
+  protected readonly pidiendoCedula = signal(false);
+  protected cedula = '';
+
+  private cedulaConocida = '';
 
   protected readonly resenas = signal<Resena[]>([]);
   protected readonly promedio = signal(0);
@@ -289,7 +293,7 @@ export class Libros implements OnInit {
     return this.alquileresActivos().get(libro._id) ?? null;
   }
 
-  protected alquilar(libro: Libro, evento?: Event): void {
+  protected pedirCedula(libro: Libro, evento?: Event): void {
     evento?.stopPropagation();
 
     if (!this.auth.autenticado()) {
@@ -302,16 +306,37 @@ export class Libros implements OnInit {
       return;
     }
 
+    if (this.seleccionado()?._id !== libro._id) {
+      this.seleccionar(libro);
+    }
+
+    this.cedula = this.cedulaConocida;
+    this.pidiendoCedula.set(true);
+    this.alquilerAviso.set(null);
+    this.alquilerError.set(null);
+  }
+
+  protected confirmarAlquiler(libro: Libro): void {
+    const cedula = this.cedula.trim().replace(/[.\s-]/g, '');
+
+    if (!/^\d{6,10}$/.test(cedula)) {
+      this.alquilerError.set('Ingresa un número de cédula válido, entre 6 y 10 dígitos.');
+      return;
+    }
+
     this.procesandoAlquiler.set(libro._id);
     this.alquilerAviso.set(null);
     this.alquilerError.set(null);
 
-    this.alquilerService.alquilar(libro._id).subscribe({
+    this.alquilerService.alquilar(libro._id, cedula).subscribe({
       next: (alquiler) => {
         const activos = new Map(this.alquileresActivos());
         activos.set(libro._id, alquiler);
         this.alquileresActivos.set(activos);
         this.cambiarStockLibro(libro._id, -1);
+        this.cedulaConocida = cedula;
+        this.cedula = '';
+        this.pidiendoCedula.set(false);
         this.procesandoAlquiler.set(null);
         this.alquilerAviso.set(`Alquiler registrado por ${alquiler.dias} días.`);
       },
@@ -320,6 +345,10 @@ export class Libros implements OnInit {
         this.alquilerError.set(err?.error?.message ?? 'No se pudo registrar el alquiler.');
       },
     });
+  }
+
+  protected irALogin(): void {
+    this.router.navigate(['/login']);
   }
 
   protected devolverAlquiler(libro: Libro, evento?: Event): void {
@@ -356,6 +385,8 @@ export class Libros implements OnInit {
 
   protected seleccionar(libro: Libro): void {
     this.seleccionado.set(libro);
+    this.pidiendoCedula.set(false);
+    this.cedula = '';
     this.alquilerAviso.set(null);
     this.alquilerError.set(null);
     this.cargarResenas(libro._id);
@@ -369,6 +400,8 @@ export class Libros implements OnInit {
 
   protected cerrar(): void {
     this.seleccionado.set(null);
+    this.pidiendoCedula.set(false);
+    this.cedula = '';
   }
 
   protected enviarResena(libro: Libro): void {
@@ -475,6 +508,10 @@ export class Libros implements OnInit {
           }
         }
         this.alquileresActivos.set(activos);
+        const conocida = alquileres.find((alquiler) => alquiler.cedula)?.cedula;
+        if (conocida) {
+          this.cedulaConocida = conocida;
+        }
       },
       error: () => undefined,
     });

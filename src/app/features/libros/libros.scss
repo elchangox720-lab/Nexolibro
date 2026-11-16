@@ -540,6 +540,47 @@ select {
   background: var(--surface-2);
 }
 
+.alquiler-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  input {
+    padding: 0.62rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+
+    &:focus {
+      border-color: rgba(212, 175, 55, 0.65);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    }
+  }
+
+  p {
+    margin: 0.1rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.alquiler-form-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
 .modal-btn-alquilar {
   border: 0;
   background: linear-gradient(135deg, var(--gold-soft), #b8860b);

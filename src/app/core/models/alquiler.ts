@@ -9,6 +9,7 @@ export interface Alquiler {
   titulo: string;
   autor?: string;
   portada?: string;
+  cedula?: string;
   dias: number;
   fechaAlquiler: string;
   fechaVencimiento: string;

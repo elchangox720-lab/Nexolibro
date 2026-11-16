@@ -13,8 +13,8 @@ export class AlquilerService {
     return this.http.get<Alquiler[]>(this.baseUrl);
   }
 
-  alquilar(libroId: string, dias = 14): Observable<Alquiler> {
-    return this.http.post<Alquiler>(this.baseUrl, { libroId, dias });
+  alquilar(libroId: string, cedula: string, dias = 14): Observable<Alquiler> {
+    return this.http.post<Alquiler>(this.baseUrl, { libroId, cedula, dias });
   }
 
   devolver(id: string): Observable<Alquiler> {

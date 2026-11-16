@@ -59,9 +59,13 @@ export class AdminAlquileres implements OnInit {
 
     return lista.filter((alquiler) => {
       const usuario = this.datosUsuario(alquiler);
-      return [alquiler.titulo, alquiler.autor, usuario?.nombre, usuario?.email].some((valor) =>
-        valor?.toLowerCase().includes(query),
-      );
+      return [
+        alquiler.titulo,
+        alquiler.autor,
+        alquiler.cedula,
+        usuario?.nombre,
+        usuario?.email,
+      ].some((valor) => valor?.toLowerCase().includes(query));
     });
   });
 

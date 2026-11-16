@@ -65,6 +65,7 @@
       <div class="fila fila--head">
         <span>Libro</span>
         <span>Usuario</span>
+        <span>Cédula</span>
         <span>Alquilado</span>
         <span>Vence</span>
         <span>Estado</span>
@@ -94,6 +95,7 @@
             <small>{{ datosUsuario(alquiler)?.email || '—' }}</small>
           </div>
 
+          <span>{{ alquiler.cedula || '—' }}</span>
           <span>{{ alquiler.fechaAlquiler | date: 'dd/MM/yyyy' }}</span>
           <span>{{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}</span>
 
