@@ -338,7 +338,15 @@ export class Libros implements OnInit {
         this.cedula = '';
         this.pidiendoCedula.set(false);
         this.procesandoAlquiler.set(null);
-        this.alquilerAviso.set(`Alquiler registrado por ${alquiler.dias} días.`);
+
+        if (alquiler.lecturaDisponible) {
+          this.cerrar();
+          this.router.navigate(['/lector', alquiler._id]);
+        } else {
+          this.alquilerAviso.set(
+            `Alquiler registrado por ${alquiler.dias} días. Archivo de lectura no disponible para este libro.`,
+          );
+        }
       },
       error: (err) => {
         this.procesandoAlquiler.set(null);
@@ -381,6 +389,22 @@ export class Libros implements OnInit {
         this.alquilerError.set(err?.error?.message ?? 'No se pudo registrar la devolución.');
       },
     });
+  }
+
+  protected abrirLector(alquiler: Alquiler, evento?: Event): void {
+    evento?.stopPropagation();
+
+    if (alquiler.vencido) {
+      this.alquilerError.set('Tu alquiler venció. El archivo de lectura ya no está disponible.');
+      return;
+    }
+
+    if (!alquiler.lecturaDisponible) {
+      this.alquilerError.set('Archivo de lectura no disponible para este libro.');
+      return;
+    }
+
+    this.router.navigate(['/lector', alquiler._id]);
   }
 
   protected seleccionar(libro: Libro): void {

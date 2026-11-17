@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/alquileres/alquileres').then((m) => m.Alquileres),
   },
   {
+    path: 'lector/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/lector/lector').then((m) => m.Lector),
+  },
+  {
     path: 'historial',
     canActivate: [authGuard],
     loadComponent: () => import('./features/historial/historial').then((m) => m.Historial),

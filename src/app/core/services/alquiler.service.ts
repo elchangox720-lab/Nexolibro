@@ -21,6 +21,10 @@ export class AlquilerService {
     return this.http.post<Alquiler>(`${this.baseUrl}/${id}/devolver`, {});
   }
 
+  obtenerLectura(id: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/lectura`, { responseType: 'blob' });
+  }
+
   listarAdmin(): Observable<Alquiler[]> {
     return this.http.get<Alquiler[]>(`${this.baseUrl}/admin`);
   }

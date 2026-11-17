@@ -1,0 +1,141 @@
+<section class="lector">
+  <header class="lector-head">
+    <div>
+      <p class="eyebrow">Lector Nexolibro</p>
+      <h1>{{ alquiler()?.titulo || 'Abriendo libro...' }}</h1>
+      @if (alquiler()?.autor) {
+        <p class="autor">{{ alquiler()?.autor }}</p>
+      }
+    </div>
+    <a class="btn-volver" routerLink="/alquileres">Volver a mis alquileres</a>
+  </header>
+
+  @if (cargando()) {
+    <div class="estado">
+      <span class="spinner" aria-hidden="true"></span>
+      <p>Preparando tu lectura...</p>
+    </div>
+  } @else if (error()) {
+    <div class="estado estado--error">
+      <p>{{ error() }}</p>
+      <div class="estado-acciones">
+        <a routerLink="/alquileres">Mis alquileres</a>
+        <a routerLink="/libros">Explorar catálogo</a>
+      </div>
+    </div>
+  } @else {
+    <div class="lector-marco">
+      <div class="lector-barra">
+        <div class="grupo">
+          <button
+            type="button"
+            class="control"
+            aria-label="Página anterior"
+            [disabled]="!puedeRetroceder()"
+            (click)="anterior()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+
+          <label class="pagina">
+            <span class="sr-only">Página</span>
+            <input
+              type="number"
+              min="1"
+              [max]="totalPaginas()"
+              [value]="pagina()"
+              (change)="irAPagina($any($event.target).value)"
+            />
+            <span>/ {{ totalPaginas() }}</span>
+          </label>
+
+          <button
+            type="button"
+            class="control"
+            aria-label="Página siguiente"
+            [disabled]="!puedeAvanzar()"
+            (click)="siguiente()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grupo">
+          <button
+            type="button"
+            class="control"
+            aria-label="Alejar"
+            [disabled]="zoom() <= 0.5"
+            (click)="cambiarZoom(-0.25)"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            class="control control--zoom"
+            title="Ajustar al ancho"
+            (click)="ajustar()"
+          >
+            {{ porcentajeZoom() }}
+          </button>
+          <button
+            type="button"
+            class="control"
+            aria-label="Acercar"
+            [disabled]="zoom() >= 3"
+            (click)="cambiarZoom(0.25)"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div class="visor" #visor>
+        <canvas #lienzo [attr.aria-label]="'Página ' + pagina() + ' de ' + totalPaginas()"></canvas>
+        @if (renderizando()) {
+          <span class="renderizando" aria-hidden="true"></span>
+        }
+      </div>
+    </div>
+
+    @if (alquiler()?.lecturaLicencia || alquiler()?.lecturaFuente) {
+      <p class="licencia">
+        @if (alquiler()?.lecturaLicencia) {
+          {{ alquiler()?.lecturaLicencia }}
+        }
+        @if (alquiler()?.lecturaFuente) {
+          <span>
+            Fuente:
+            @if (alquiler()?.lecturaFuenteUrl) {
+              <a [href]="alquiler()?.lecturaFuenteUrl" target="_blank" rel="noopener noreferrer">{{
+                alquiler()?.lecturaFuente
+              }}</a>
+            } @else {
+              {{ alquiler()?.lecturaFuente }}
+            }
+          </span>
+        }
+      </p>
+    }
+  }
+</section>

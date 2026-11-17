@@ -19,6 +19,11 @@ export interface Alquiler {
   devueltoPor?: 'usuario' | 'admin';
   vencido: boolean;
   diasRestantes: number;
+  lecturaDisponible: boolean;
+  lecturaPaginas: number | null;
+  lecturaLicencia: string | null;
+  lecturaFuente: string | null;
+  lecturaFuenteUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }

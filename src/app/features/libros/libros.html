@@ -195,6 +195,18 @@
 
             <div class="card-acciones">
               @if (alquilerActivo(libro); as alquiler) {
+                @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                  <button
+                    class="card-alquilar card-alquilar--leer"
+                    type="button"
+                    [attr.aria-label]="'Leer ' + libro.titulo"
+                    (click)="abrirLector(alquiler, $event)"
+                    (keydown.enter)="$event.stopPropagation()"
+                    (keydown.space)="$event.stopPropagation()"
+                  >
+                    Leer
+                  </button>
+                }
                 <button
                   class="card-alquilar card-alquilar--devolver"
                   type="button"
@@ -301,15 +313,33 @@
                       (vencido)
                     }
                   </span>
-                  <button
-                    class="modal-btn modal-btn-devolver"
-                    type="button"
-                    [disabled]="procesandoAlquiler() === libro._id"
-                    (click)="devolverAlquiler(libro, $event)"
-                  >
-                    {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
-                  </button>
+                  <div class="alquiler-form-acciones">
+                    @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                      <button
+                        class="modal-btn modal-btn-alquilar"
+                        type="button"
+                        (click)="abrirLector(alquiler, $event)"
+                      >
+                        Leer
+                      </button>
+                    }
+                    <button
+                      class="modal-btn modal-btn-devolver"
+                      type="button"
+                      [disabled]="procesandoAlquiler() === libro._id"
+                      (click)="devolverAlquiler(libro, $event)"
+                    >
+                      {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
+                    </button>
+                  </div>
                 </div>
+                @if (alquiler.vencido) {
+                  <p class="alquiler-error">
+                    Este alquiler venció. El archivo de lectura ya no está disponible.
+                  </p>
+                } @else if (!alquiler.lecturaDisponible) {
+                  <p class="alquiler-error">Archivo de lectura no disponible para este libro.</p>
+                }
               } @else if (pidiendoCedula()) {
                 <form class="alquiler-form" (ngSubmit)="confirmarAlquiler(libro)">
                   <label for="cedula-alquiler">Cédula de ciudadanía</label>

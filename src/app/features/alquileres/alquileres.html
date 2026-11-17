@@ -73,14 +73,21 @@
                 </dl>
               </div>
 
-              <button
-                class="btn-devolver"
-                type="button"
-                [disabled]="devolviendo() === alquiler._id"
-                (click)="devolver(alquiler)"
-              >
-                {{ devolviendo() === alquiler._id ? 'Registrando...' : 'Devolver' }}
-              </button>
+              <div class="acciones">
+                @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                  <a class="btn-leer" [routerLink]="['/lector', alquiler._id]">Leer</a>
+                } @else if (!alquiler.vencido) {
+                  <span class="badge">Sin archivo digital</span>
+                }
+                <button
+                  class="btn-devolver"
+                  type="button"
+                  [disabled]="devolviendo() === alquiler._id"
+                  (click)="devolver(alquiler)"
+                >
+                  {{ devolviendo() === alquiler._id ? 'Registrando...' : 'Devolver' }}
+                </button>
+              </div>
             </li>
           }
         </ul>
