@@ -200,15 +200,18 @@ export class Lector {
 
       const datos = new Uint8Array(await blob.arrayBuffer());
       const pdfjs = await import('pdfjs-dist');
+      const basePdfjs = new URL('assets/pdfjs/', document.baseURI).toString();
 
-      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-        'assets/pdfjs/pdf.worker.min.mjs',
-        document.baseURI,
-      ).toString();
+      pdfjs.GlobalWorkerOptions.workerSrc = `${basePdfjs}pdf.worker.min.mjs`;
 
       const tarea = pdfjs.getDocument({
         data: datos,
         useSystemFonts: true,
+        wasmUrl: `${basePdfjs}wasm/`,
+        cMapUrl: `${basePdfjs}cmaps/`,
+        cMapPacked: true,
+        standardFontDataUrl: `${basePdfjs}standard_fonts/`,
+        iccUrl: `${basePdfjs}iccs/`,
       });
 
       this.tareaCarga = tarea;
