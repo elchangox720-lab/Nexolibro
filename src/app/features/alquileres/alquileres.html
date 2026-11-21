@@ -26,6 +26,57 @@
       <button type="button" (click)="cargar()">Reintentar</button>
     </div>
   } @else {
+    @if (pendientes().length) {
+      <section class="bloque">
+        <header class="bloque-head">
+          <h2>
+            Pagos pendientes <span>{{ pendientes().length }}</span>
+          </h2>
+          <p>Completa el pago para activar el alquiler y habilitar la lectura.</p>
+        </header>
+
+        <ul class="lista">
+          @for (alquiler of pendientes(); track alquiler._id) {
+            <li class="item item--pendiente">
+              <div class="portada">
+                @if (alquiler.portada) {
+                  <img [src]="alquiler.portada" [alt]="'Portada de ' + alquiler.titulo" />
+                } @else {
+                  <span>{{ alquiler.titulo.charAt(0) }}</span>
+                }
+              </div>
+
+              <div class="info">
+                <div class="titulo-fila">
+                  <strong>{{ alquiler.titulo }}</strong>
+                  <span class="badge badge--pago">Pago pendiente</span>
+                </div>
+                <span class="autor">{{ alquiler.autor || 'Autor desconocido' }}</span>
+                <dl class="fechas">
+                  <div>
+                    <dt>Tarifa</dt>
+                    <dd>{{ alquiler.tarifa | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</dd>
+                  </div>
+                  @if (alquiler.pagoExpiraEn) {
+                    <div>
+                      <dt>Pagar antes de</dt>
+                      <dd>{{ alquiler.pagoExpiraEn | date: 'dd/MM/yyyy HH:mm' }}</dd>
+                    </div>
+                  }
+                </dl>
+              </div>
+
+              <div class="acciones">
+                <button class="btn-pagar" type="button" (click)="abrirCheckout(alquiler)">
+                  Pagar ahora
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
     <section class="bloque">
       <header class="bloque-head">
         <h2>
@@ -59,6 +110,15 @@
                   } @else {
                     <span class="badge">{{ alquiler.diasRestantes }} días restantes</span>
                   }
+                  @if (alquiler.renovaciones > 0) {
+                    <span class="badge">Renovado {{ alquiler.renovaciones }}x</span>
+                  }
+                  @if (alquiler.multaPendiente > 0) {
+                    <span class="badge badge--danger">
+                      Multa
+                      {{ alquiler.multaPendiente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    </span>
+                  }
                 </div>
                 <span class="autor">{{ alquiler.autor || 'Autor desconocido' }}</span>
                 <dl class="fechas">
@@ -70,6 +130,12 @@
                     <dt>Vence</dt>
                     <dd>{{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}</dd>
                   </div>
+                  @if (alquiler.vencido) {
+                    <div>
+                      <dt>Gracia restante</dt>
+                      <dd>{{ alquiler.diasGracia }} días</dd>
+                    </div>
+                  }
                 </dl>
               </div>
 
@@ -78,6 +144,26 @@
                   <a class="btn-leer" [routerLink]="['/lector', alquiler._id]">Leer</a>
                 } @else if (!alquiler.vencido) {
                   <span class="badge">Sin archivo digital</span>
+                }
+                @if (alquiler.puedeRenovar) {
+                  <button
+                    class="btn-renovar"
+                    type="button"
+                    [disabled]="procesando() === alquiler._id"
+                    (click)="renovar(alquiler)"
+                  >
+                    {{ procesando() === alquiler._id ? 'Procesando...' : 'Renovar' }}
+                  </button>
+                }
+                @if (alquiler.puedePagarMulta) {
+                  <button
+                    class="btn-pagar"
+                    type="button"
+                    [disabled]="procesando() === alquiler._id"
+                    (click)="pagarMulta(alquiler)"
+                  >
+                    {{ procesando() === alquiler._id ? 'Procesando...' : 'Pagar multa' }}
+                  </button>
                 }
                 <button
                   class="btn-devolver"
@@ -122,6 +208,12 @@
                 <div class="titulo-fila">
                   <strong>{{ alquiler.titulo }}</strong>
                   <span class="badge badge--exito">Devuelto</span>
+                  @if (alquiler.multaPendiente > 0) {
+                    <span class="badge badge--danger">
+                      Multa pendiente
+                      {{ alquiler.multaPendiente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    </span>
+                  }
                 </div>
                 <span class="autor">{{ alquiler.autor || 'Autor desconocido' }}</span>
                 <span class="devolucion">
@@ -131,6 +223,19 @@
                   }
                 </span>
               </div>
+
+              @if (alquiler.puedePagarMulta) {
+                <div class="acciones">
+                  <button
+                    class="btn-pagar"
+                    type="button"
+                    [disabled]="procesando() === alquiler._id"
+                    (click)="pagarMulta(alquiler)"
+                  >
+                    {{ procesando() === alquiler._id ? 'Procesando...' : 'Pagar multa' }}
+                  </button>
+                </div>
+              }
             </li>
           }
         </ul>

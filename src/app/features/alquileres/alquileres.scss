@@ -40,7 +40,9 @@
 
 .btn-catalogo,
 .btn-devolver,
-.btn-leer {
+.btn-leer,
+.btn-pagar,
+.btn-renovar {
   border-radius: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -182,6 +184,11 @@
     border-color: rgba(248, 113, 113, 0.45);
   }
 
+  &--pendiente {
+    border-color: rgba(212, 175, 55, 0.5);
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.09), var(--bg-elevated));
+  }
+
   &--devuelto {
     opacity: 0.85;
   }
@@ -257,6 +264,12 @@
     background: rgba(52, 211, 153, 0.1);
     color: var(--success);
   }
+
+  &--pago {
+    border-color: rgba(212, 175, 55, 0.55);
+    background: rgba(212, 175, 55, 0.14);
+    color: var(--gold-soft);
+  }
 }
 
 .fechas {
@@ -288,6 +301,7 @@
 .acciones {
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 0.45rem;
 }
 
@@ -316,6 +330,32 @@
   background: linear-gradient(135deg, var(--gold-soft), #b8860b);
   color: #1a1200;
   font-size: 0.82rem;
+}
+
+.btn-pagar,
+.btn-renovar {
+  padding: 0.55rem 0.95rem;
+  border: 0;
+  background: linear-gradient(135deg, var(--gold-soft), #b8860b);
+  color: #1a1200;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+    transform: none;
+  }
+}
+
+.btn-renovar {
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  background: transparent;
+  color: var(--gold-soft);
 }
 
 @media (max-width: 620px) {

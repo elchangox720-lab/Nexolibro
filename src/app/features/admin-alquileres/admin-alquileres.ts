@@ -1,15 +1,15 @@
-import { DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Alquiler } from '../../core/models/alquiler';
 import { AlquilerService } from '../../core/services/alquiler.service';
 
-type Filtro = 'activos' | 'vencidos' | 'devueltos' | 'todos';
+type Filtro = 'pendientes' | 'activos' | 'vencidos' | 'devueltos' | 'todos';
 
 @Component({
   selector: 'app-admin-alquileres',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink],
   templateUrl: './admin-alquileres.html',
   styleUrl: './admin-alquileres.scss',
 })
@@ -28,6 +28,7 @@ export class AdminAlquileres implements OnInit {
   protected readonly resumen = computed(() => {
     const lista = this.alquileres();
     return {
+      pendientes: lista.filter((alquiler) => alquiler.estado === 'pendiente_pago').length,
       activos: lista.filter((alquiler) => alquiler.estado === 'activo').length,
       vencidos: lista.filter((alquiler) => alquiler.estado === 'activo' && alquiler.vencido).length,
       devueltos: lista.filter((alquiler) => alquiler.estado === 'devuelto').length,
@@ -40,6 +41,9 @@ export class AdminAlquileres implements OnInit {
     let lista = this.alquileres();
 
     switch (this.filtro()) {
+      case 'pendientes':
+        lista = lista.filter((alquiler) => alquiler.estado === 'pendiente_pago');
+        break;
       case 'activos':
         lista = lista.filter((alquiler) => alquiler.estado === 'activo');
         break;

@@ -310,6 +310,12 @@
     background: rgba(52, 211, 153, 0.1);
     color: var(--success);
   }
+
+  &--pago {
+    border-color: rgba(212, 175, 55, 0.55);
+    background: rgba(212, 175, 55, 0.14);
+    color: var(--gold-soft);
+  }
 }
 
 .acciones {

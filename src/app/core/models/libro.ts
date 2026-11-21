@@ -9,6 +9,10 @@ export interface Libro {
   genero?: string;
   precio: number;
   stock: number;
+  tarifaAlquiler?: number;
+  tarifaDias?: number;
+  pagoRequerido?: boolean;
+  modoPagos?: 'auto' | 'wompi' | 'directo';
   descripcion?: string;
   portada?: string;
   createdAt: string;

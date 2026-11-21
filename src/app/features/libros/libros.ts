@@ -12,7 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { retry, throwError, timer } from 'rxjs';
-import { Alquiler } from '../../core/models/alquiler';
+import { Alquiler, RespuestaAlquiler } from '../../core/models/alquiler';
 import { EstadoLectura } from '../../core/models/biblioteca';
 import { Libro } from '../../core/models/libro';
 import { Resena } from '../../core/models/resena';
@@ -290,7 +290,13 @@ export class Libros implements OnInit {
   }
 
   protected alquilerActivo(libro: Libro): Alquiler | null {
-    return this.alquileresActivos().get(libro._id) ?? null;
+    const alquiler = this.alquileresActivos().get(libro._id) ?? null;
+
+    if (alquiler?.estado === 'pendiente_pago' && !alquiler.checkoutUrl) {
+      return null;
+    }
+
+    return alquiler;
   }
 
   protected pedirCedula(libro: Libro, evento?: Event): void {
@@ -298,6 +304,18 @@ export class Libros implements OnInit {
 
     if (!this.auth.autenticado()) {
       this.router.navigate(['/login']);
+      return;
+    }
+
+    const existente = this.alquilerActivo(libro);
+
+    if (existente?.estado === 'pendiente_pago') {
+      this.abrirCheckout(existente, evento);
+      return;
+    }
+
+    if (existente) {
+      this.alquilerError.set('Ya tienes un alquiler activo de este libro.');
       return;
     }
 
@@ -316,6 +334,19 @@ export class Libros implements OnInit {
     this.alquilerError.set(null);
   }
 
+  protected abrirCheckout(alquiler: Alquiler, evento?: Event): void {
+    evento?.stopPropagation();
+
+    if (!alquiler.checkoutUrl) {
+      this.alquilerError.set(
+        'El enlace de pago expiró. Vuelve a intentar el alquiler para generar uno nuevo.',
+      );
+      return;
+    }
+
+    window.location.assign(alquiler.checkoutUrl);
+  }
+
   protected confirmarAlquiler(libro: Libro): void {
     const cedula = this.cedula.trim().replace(/[.\s-]/g, '');
 
@@ -329,15 +360,32 @@ export class Libros implements OnInit {
     this.alquilerError.set(null);
 
     this.alquilerService.alquilar(libro._id, cedula).subscribe({
-      next: (alquiler) => {
+      next: (respuesta: RespuestaAlquiler) => {
+        const alquiler = respuesta.alquiler;
         const activos = new Map(this.alquileresActivos());
         activos.set(libro._id, alquiler);
         this.alquileresActivos.set(activos);
-        this.cambiarStockLibro(libro._id, -1);
         this.cedulaConocida = cedula;
         this.cedula = '';
         this.pidiendoCedula.set(false);
         this.procesandoAlquiler.set(null);
+
+        if (!respuesta.reutilizado) {
+          this.cambiarStockLibro(libro._id, -1);
+        }
+
+        if (respuesta.checkoutUrl) {
+          this.alquilerAviso.set(
+            `Reservamos "${libro.titulo}". Completa el pago de ${alquiler.tarifa.toLocaleString('es-CO')} COP para activar el alquiler.`,
+          );
+          window.location.assign(respuesta.checkoutUrl);
+          return;
+        }
+
+        if (alquiler.estado === 'pendiente_pago') {
+          this.alquilerAviso.set('El pago aún no ha sido confirmado. Consulta tus alquileres.');
+          return;
+        }
 
         if (alquiler.lecturaDisponible) {
           this.cerrar();
@@ -367,6 +415,11 @@ export class Libros implements OnInit {
       return;
     }
 
+    if (alquiler.estado === 'pendiente_pago') {
+      this.abrirCheckout(alquiler, evento);
+      return;
+    }
+
     if (!confirm(`¿Confirmas la devolución de "${libro.titulo}"?`)) {
       return;
     }
@@ -393,6 +446,11 @@ export class Libros implements OnInit {
 
   protected abrirLector(alquiler: Alquiler, evento?: Event): void {
     evento?.stopPropagation();
+
+    if (alquiler.estado === 'pendiente_pago') {
+      this.abrirCheckout(alquiler, evento);
+      return;
+    }
 
     if (alquiler.vencido) {
       this.alquilerError.set('Tu alquiler venció. El archivo de lectura ya no está disponible.');
@@ -527,7 +585,7 @@ export class Libros implements OnInit {
       next: (alquileres) => {
         const activos = new Map<string, Alquiler>();
         for (const alquiler of alquileres) {
-          if (alquiler.estado === 'activo') {
+          if (alquiler.estado === 'activo' || alquiler.estado === 'pendiente_pago') {
             activos.set(alquiler.libro, alquiler);
           }
         }

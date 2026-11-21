@@ -36,6 +36,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/historial/historial').then((m) => m.Historial),
   },
   {
+    path: 'pago/resultado/:referencia',
+    loadComponent: () =>
+      import('./features/pago-resultado/pago-resultado').then((m) => m.PagoResultado),
+  },
+  {
     path: 'admin/alquileres',
     canActivate: [adminGuard],
     loadComponent: () =>

@@ -1,0 +1,100 @@
+<section class="pago">
+  <article
+    class="card"
+    [class.card--ok]="estado() === 'aprobado'"
+    [class.card--error]="estado() === 'fallido' || estado() === 'error'"
+  >
+    <p class="eyebrow">Resultado del pago</p>
+
+    @if (estado() === 'cargando') {
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Verificando pago</h1>
+    } @else if (estado() === 'pendiente') {
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Pago pendiente</h1>
+    } @else if (estado() === 'aprobado') {
+      <div class="icon icon--ok" aria-hidden="true">✓</div>
+      <h1>Pago aprobado</h1>
+    } @else {
+      <div class="icon icon--error" aria-hidden="true">!</div>
+      <h1>Pago no completado</h1>
+    }
+
+    <p class="mensaje">{{ mensaje() }}</p>
+
+    <p class="referencia">
+      Referencia <code>{{ referencia }}</code>
+    </p>
+
+    @if (pago(); as pagoActual) {
+      <dl class="detalle">
+        <div>
+          <dt>Tipo</dt>
+          <dd>
+            @if (pagoActual.tipo === 'renovacion') {
+              Renovación
+            } @else if (pagoActual.tipo === 'multa') {
+              Multa
+            } @else {
+              Alquiler
+            }
+          </dd>
+        </div>
+        <div>
+          <dt>Monto</dt>
+          <dd>{{ pagoActual.monto | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>{{ etiquetaEstado(pagoActual.estado) }}</dd>
+        </div>
+        @if (pagoActual.aprobadoEn) {
+          <div>
+            <dt>Fecha</dt>
+            <dd>{{ pagoActual.aprobadoEn | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </div>
+        }
+      </dl>
+    }
+
+    @if (alquiler(); as alquilerActual) {
+      <p class="libro">
+        <strong>{{ alquilerActual.titulo }}</strong>
+        @if (alquilerActual.estado === 'activo') {
+          <span>Activo hasta el {{ alquilerActual.fechaVencimiento | date: 'dd/MM/yyyy' }}</span>
+        } @else if (alquilerActual.estado === 'pendiente_pago') {
+          <span>El alquiler se activará al confirmar el pago.</span>
+        }
+      </p>
+    }
+
+    <div class="acciones">
+      @if (estado() === 'aprobado') {
+        @if (alquiler(); as alquilerActual) {
+          @if (alquilerActual.lecturaDisponible && !alquilerActual.vencido) {
+            <a class="btn btn--primary" [routerLink]="['/lector', alquilerActual._id]">
+              Leer ahora
+            </a>
+          }
+        }
+        <a class="btn" routerLink="/alquileres">Ver mis alquileres</a>
+        <a class="btn btn--ghost" routerLink="/libros">Seguir explorando</a>
+      } @else if (estado() === 'fallido' || estado() === 'error') {
+        <button class="btn btn--primary" type="button" (click)="reintentar()">
+          Volver a verificar
+        </button>
+        <a class="btn" routerLink="/alquileres">Mis alquileres</a>
+        <a class="btn btn--ghost" routerLink="/libros">Volver al catálogo</a>
+      } @else {
+        <button class="btn btn--primary" type="button" (click)="reintentar()">
+          Verificar de nuevo
+        </button>
+        <a class="btn" routerLink="/alquileres">Mis alquileres</a>
+      }
+    </div>
+
+    @if (requiereLogin()) {
+      <a class="login-link" routerLink="/login">Iniciar sesión</a>
+    }
+  </article>
+</section>

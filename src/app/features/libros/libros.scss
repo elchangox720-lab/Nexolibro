@@ -308,10 +308,23 @@ select {
   border-top: 1px solid var(--border);
 }
 
+.precio-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
 .price {
   color: var(--gold-soft);
   font-size: 1.15rem;
   font-weight: 700;
+}
+
+.tarifa {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.25;
 }
 
 .year {
@@ -620,6 +633,13 @@ select {
   gap: 0.5rem 1rem;
   color: var(--text-muted);
   font-size: 0.84rem;
+}
+
+.alquiler-costo {
+  margin: 0;
+  color: var(--gold-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .alquiler-aviso,

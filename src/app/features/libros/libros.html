@@ -185,9 +185,19 @@
             </div>
 
             <div class="card-footer">
-              <span class="price">{{
-                libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0'
-              }}</span>
+              <div class="precio-bloque">
+                <span class="price">{{
+                  libro.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                }}</span>
+                <small class="tarifa">
+                  @if (libro.pagoRequerido && libro.tarifaAlquiler) {
+                    Alquiler {{ libro.tarifaDias }} días:
+                    {{ libro.tarifaAlquiler | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                  } @else {
+                    Alquiler gratis
+                  }
+                </small>
+              </div>
               @if (libro.anio) {
                 <span class="year">{{ libro.anio }}</span>
               }
@@ -195,29 +205,43 @@
 
             <div class="card-acciones">
               @if (alquilerActivo(libro); as alquiler) {
-                @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                @if (alquiler.estado === 'pendiente_pago') {
                   <button
-                    class="card-alquilar card-alquilar--leer"
+                    class="card-alquilar"
                     type="button"
-                    [attr.aria-label]="'Leer ' + libro.titulo"
-                    (click)="abrirLector(alquiler, $event)"
+                    [disabled]="procesandoAlquiler() === libro._id"
+                    [attr.aria-label]="'Pagar alquiler de ' + libro.titulo"
+                    (click)="abrirCheckout(alquiler, $event)"
                     (keydown.enter)="$event.stopPropagation()"
                     (keydown.space)="$event.stopPropagation()"
                   >
-                    Leer
+                    Completar pago
+                  </button>
+                } @else {
+                  @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                    <button
+                      class="card-alquilar card-alquilar--leer"
+                      type="button"
+                      [attr.aria-label]="'Leer ' + libro.titulo"
+                      (click)="abrirLector(alquiler, $event)"
+                      (keydown.enter)="$event.stopPropagation()"
+                      (keydown.space)="$event.stopPropagation()"
+                    >
+                      Leer
+                    </button>
+                  }
+                  <button
+                    class="card-alquilar card-alquilar--devolver"
+                    type="button"
+                    [disabled]="procesandoAlquiler() === libro._id"
+                    [attr.aria-label]="'Devolver ' + libro.titulo"
+                    (click)="devolverAlquiler(libro, $event)"
+                    (keydown.enter)="$event.stopPropagation()"
+                    (keydown.space)="$event.stopPropagation()"
+                  >
+                    {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
                   </button>
                 }
-                <button
-                  class="card-alquilar card-alquilar--devolver"
-                  type="button"
-                  [disabled]="procesandoAlquiler() === libro._id"
-                  [attr.aria-label]="'Devolver ' + libro.titulo"
-                  (click)="devolverAlquiler(libro, $event)"
-                  (keydown.enter)="$event.stopPropagation()"
-                  (keydown.space)="$event.stopPropagation()"
-                >
-                  {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
-                </button>
               } @else {
                 <button
                   class="card-alquilar"
@@ -306,39 +330,69 @@
           <div class="modal-alquiler">
             @if (auth.autenticado()) {
               @if (alquilerActivo(libro); as alquiler) {
-                <div class="alquiler-activo">
-                  <span>
-                    Alquilado hasta el {{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}
-                    @if (alquiler.vencido) {
-                      (vencido)
-                    }
-                  </span>
-                  <div class="alquiler-form-acciones">
-                    @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                @if (alquiler.estado === 'pendiente_pago') {
+                  <div class="alquiler-activo">
+                    <span>
+                      Pago pendiente para activar el alquiler.
+                      @if (alquiler.pagoExpiraEn) {
+                        Vence el {{ alquiler.pagoExpiraEn | date: 'dd/MM/yyyy HH:mm' }}
+                      }
+                    </span>
+                    <div class="alquiler-form-acciones">
                       <button
                         class="modal-btn modal-btn-alquilar"
                         type="button"
-                        (click)="abrirLector(alquiler, $event)"
+                        [disabled]="procesandoAlquiler() === libro._id"
+                        (click)="abrirCheckout(alquiler, $event)"
                       >
-                        Leer
+                        Pagar ahora
                       </button>
-                    }
-                    <button
-                      class="modal-btn modal-btn-devolver"
-                      type="button"
-                      [disabled]="procesandoAlquiler() === libro._id"
-                      (click)="devolverAlquiler(libro, $event)"
-                    >
-                      {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
-                    </button>
+                    </div>
                   </div>
-                </div>
-                @if (alquiler.vencido) {
-                  <p class="alquiler-error">
-                    Este alquiler venció. El archivo de lectura ya no está disponible.
+                  <p class="alquiler-aviso">
+                    Cuando Wompi confirme el pago, el alquiler se activará automáticamente.
                   </p>
-                } @else if (!alquiler.lecturaDisponible) {
-                  <p class="alquiler-error">Archivo de lectura no disponible para este libro.</p>
+                } @else {
+                  <div class="alquiler-activo">
+                    <span>
+                      Alquilado hasta el {{ alquiler.fechaVencimiento | date: 'dd/MM/yyyy' }}
+                      @if (alquiler.vencido) {
+                        (vencido)
+                      }
+                    </span>
+                    <div class="alquiler-form-acciones">
+                      @if (alquiler.lecturaDisponible && !alquiler.vencido) {
+                        <button
+                          class="modal-btn modal-btn-alquilar"
+                          type="button"
+                          (click)="abrirLector(alquiler, $event)"
+                        >
+                          Leer
+                        </button>
+                      }
+                      <button
+                        class="modal-btn modal-btn-devolver"
+                        type="button"
+                        [disabled]="procesandoAlquiler() === libro._id"
+                        (click)="devolverAlquiler(libro, $event)"
+                      >
+                        {{ procesandoAlquiler() === libro._id ? 'Registrando...' : 'Devolver' }}
+                      </button>
+                    </div>
+                  </div>
+                  @if (alquiler.vencido) {
+                    <p class="alquiler-error">
+                      Este alquiler venció. El archivo de lectura ya no está disponible.
+                    </p>
+                  } @else if (!alquiler.lecturaDisponible) {
+                    <p class="alquiler-error">Archivo de lectura no disponible para este libro.</p>
+                  }
+                  @if (alquiler.multaPendiente > 0) {
+                    <p class="alquiler-error">
+                      Multa pendiente:
+                      {{ alquiler.multaPendiente | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    </p>
+                  }
                 }
               } @else if (pidiendoCedula()) {
                 <form class="alquiler-form" (ngSubmit)="confirmarAlquiler(libro)">
@@ -376,6 +430,13 @@
                   </div>
                 </form>
               } @else {
+                @if (libro.pagoRequerido && libro.tarifaAlquiler) {
+                  <p class="alquiler-costo">
+                    Tarifa de alquiler:
+                    {{ libro.tarifaAlquiler | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                    por {{ libro.tarifaDias }} días.
+                  </p>
+                }
                 <button
                   class="modal-btn modal-btn-alquilar"
                   type="button"
